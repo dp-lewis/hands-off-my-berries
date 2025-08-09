@@ -1,7 +1,14 @@
-[gd_scene load_steps=6 format=3 uid="uid://woxo7m8qhipo"]
+[gd_scene load_steps=7 format=3 uid="uid://woxo7m8qhipo"]
 
+[ext_resource type="Script" uid="uid://cjodfbct1ml6h" path="res://systems/simple_game_manager.gd" id="1_onwf1"]
 [ext_resource type="PackedScene" uid="uid://dhycgw31gv2xr" path="res://scenes/players/player.tscn" id="1_voxel"]
 [ext_resource type="PackedScene" uid="uid://b8b3dbuxtoblb" path="res://models/kenney-survival-kit/tree.tscn" id="2_awkes"]
+
+[sub_resource type="Environment" id="Environment_brxo2"]
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_sky_contribution = 0.98
+reflected_light_source = 1
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_brxo2"]
 albedo_color = Color(0.0997476, 0.394982, 0.328289, 1)
@@ -10,18 +17,21 @@ albedo_color = Color(0.0997476, 0.394982, 0.328289, 1)
 material = SubResource("StandardMaterial3D_brxo2")
 size = Vector2(150, 150)
 
-[sub_resource type="Environment" id="Environment_brxo2"]
-background_mode = 1
-background_color = Color(0.714771, 0.898021, 1, 1)
-tonemap_mode = 2
-
 [node name="Level-test" type="Node3D"]
 
-[node name="ground" type="MeshInstance3D" parent="."]
-mesh = SubResource("PlaneMesh_voxel")
+[node name="GameManager" type="Node3D" parent="."]
+script = ExtResource("1_onwf1")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_brxo2")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -0.159364, 0.98722, 0, -0.98722, -0.159364, 0, 5.82034, 0)
+light_energy = 0.5
+shadow_enabled = true
+
+[node name="ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_voxel")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.573577, 0.819152, 0, -0.819152, 0.573577, 0, 50, 30)
@@ -29,11 +39,6 @@ fov = 40.0
 size = 16.714
 
 [node name="Player" parent="." instance=ExtResource("1_voxel")]
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -0.159364, 0.98722, 0, -0.98722, -0.159364, 0, 5.82034, 0)
-light_energy = 0.5
-shadow_enabled = true
 
 [node name="Node3D" type="Node3D" parent="."]
 

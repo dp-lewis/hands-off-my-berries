@@ -27,6 +27,15 @@ var tent_ghost: Node3D = null
 @onready var character_model: Node3D = $"character-female-a2"
 @onready var animation_player: AnimationPlayer
 
+# Simple survival variables
+var health: float = 100.0
+var max_health: float = 100.0
+var is_night_time: bool = false
+
+func _ready():
+	# Add player to group for day/night system to find
+	add_to_group("players")
+
 func _physics_process(delta):
 	var input_dir = get_input_direction()
 	
@@ -46,6 +55,12 @@ func _physics_process(delta):
 	# Update ghost position if in build mode
 	if is_in_build_mode and tent_ghost:
 		update_ghost_position()
+	
+	# Simple night survival
+	# if is_night_time and not is_in_shelter:
+	# 	take_damage(10.0 * delta)  # 10 damage per second at night when exposed
+	# elif is_in_shelter:
+	# 	heal(5.0 * delta)  # 5 health per second when sheltered
 
 func handle_movement(input_dir: Vector2, delta: float):
 	if input_dir != Vector2.ZERO:
@@ -335,7 +350,7 @@ func enter_shelter_manually():
 		if nearby_shelter.shelter_player(self):
 			is_in_shelter = true
 			current_shelter = nearby_shelter
-			print("Player ", player_id, " entered tent shelter")
+			print("Player ", player_id, " entered tent shelter - safe from night!")
 
 func enter_tent_shelter(tent: Node3D):
 	# This method is called by the tent for automatic tracking
@@ -375,3 +390,37 @@ func get_inventory_space() -> int:
 
 func is_inventory_full() -> bool:
 	return wood >= max_inventory
+
+# Simple day/night survival methods
+func on_day_started():
+	is_night_time = false
+	print("Player ", player_id, " feels safer in daylight")
+
+func on_night_started():
+	is_night_time = true
+	print("Player ", player_id, " feels the danger of night")
+	if not is_in_shelter:
+		print("Player ", player_id, " is exposed to night dangers!")
+
+func take_damage(amount: float):
+	health = max(health - amount, 0.0)
+	
+	if health <= 0.0:
+		print("Player ", player_id, " has died from night exposure!")
+		respawn_player()
+	elif health < 25.0:
+		print("Player ", player_id, " is in critical condition! (", int(health), "/", int(max_health), " health)")
+
+func heal(amount: float):
+	health = min(health + amount, max_health)
+
+func respawn_player():
+	health = max_health
+	global_position = Vector3.ZERO  # Reset to spawn point
+	print("Player ", player_id, " has respawned")
+
+func get_health() -> float:
+	return health
+
+func get_health_percentage() -> float:
+	return health / max_health
