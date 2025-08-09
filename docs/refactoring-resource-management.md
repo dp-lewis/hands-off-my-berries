@@ -193,30 +193,41 @@ func get_resources_by_category(category: ResourceCategory) -> Dictionary
 - [ ] Create `config/resource_config.gd`
 - [ ] Implement basic resource storage and manipulation
 
+### Step 1.5: Set Up GUT Tests (Day 1)
+- [ ] Create `tests/test_resource_manager.gd` with comprehensive unit tests
+- [ ] Create `tests/test_player_resource_integration.gd` for integration tests
+- [ ] Set up test runner scene for resource refactoring
+- [ ] Verify all tests pass before proceeding to next phase
+
 ### Step 2: Add Component to Player (Day 1)
 - [ ] Add ResourceManager as child node to player scene
 - [ ] Update player script to use component
 - [ ] Test basic resource operations
+- [ ] **Run GUT tests to verify integration**
 
 ### Step 3: Update Resource Collection (Day 2)
 - [ ] Refactor `add_wood()` and `add_food()` methods
 - [ ] Update tree and pumpkin interaction scripts
 - [ ] Test resource collection still works
+- [ ] **Run GUT tests to verify collection logic**
 
 ### Step 4: Update Building System (Day 2)
 - [ ] Refactor building cost checks
 - [ ] Update tent placement logic
 - [ ] Test building still works with new system
+- [ ] **Run GUT tests to verify building requirements**
 
 ### Step 5: Update UI System (Day 3)
 - [ ] Refactor UI to use ResourceManager signals
 - [ ] Test UI updates correctly show resource changes
 - [ ] Ensure UI positioning fix still works
+- [ ] **Run full GUT test suite**
 
 ### Step 6: Testing & Polish (Day 3)
 - [ ] Run comprehensive tests with multiple players
 - [ ] Test edge cases (full inventory, zero resources)
-- [ ] Update unit tests to cover ResourceManager
+- [ ] **Expand GUT tests for any new edge cases discovered**
+- [ ] **Final GUT test validation before merging**
 
 ## Benefits After Refactoring
 
@@ -236,26 +247,217 @@ func get_resources_by_category(category: ResourceCategory) -> Dictionary
 - **Configuration-driven**: Easy to tweak resource limits
 - **Reusable**: ResourceManager can be used by NPCs, containers, etc.
 
-## Testing Strategy
+## Testing Strategy with GUT Framework
 
-### Unit Tests
+### GUT Unit Tests for ResourceManager
+
+**File**: `tests/test_resource_manager.gd`
+
 ```gdscript
-# tests/test_resource_manager.gd
-func test_add_resource_within_capacity()
-func test_add_resource_exceeding_capacity()
-func test_remove_resource_sufficient_amount()
-func test_remove_resource_insufficient_amount()
-func test_resource_signals_emitted()
+extends GutTest
+
+var resource_manager: ResourceManager
+var signal_watcher: SignalWatcher
+
+func before_each():
+    resource_manager = ResourceManager.new()
+    signal_watcher = SignalWatcher.new()
+    add_child(resource_manager)
+    signal_watcher.watch_signals(resource_manager)
+
+func after_each():
+    signal_watcher.free()
+    resource_manager.queue_free()
+
+func test_setup_resource_type():
+    # Test basic resource type setup
+    resource_manager.setup_resource_type("wood", 10, 5)
+    
+    assert_eq(resource_manager.get_resource_amount("wood"), 5, "Initial amount should be set")
+    assert_eq(resource_manager.get_available_space("wood"), 5, "Available space should be calculated")
+    assert_false(resource_manager.is_resource_full("wood"), "Should not be full initially")
+
+func test_add_resource_within_capacity():
+    # Test adding resources within capacity limits
+    resource_manager.setup_resource_type("wood", 10, 0)
+    
+    var amount_added = resource_manager.add_resource("wood", 5)
+    
+    assert_eq(amount_added, 5, "Should add full amount when space available")
+    assert_eq(resource_manager.get_resource_amount("wood"), 5, "Resource amount should increase")
+    assert_signal_emitted(resource_manager, "resource_changed", "Should emit resource_changed signal")
+
+func test_add_resource_exceeding_capacity():
+    # Test adding more resources than capacity allows
+    resource_manager.setup_resource_type("wood", 10, 8)
+    
+    var amount_added = resource_manager.add_resource("wood", 5)
+    
+    assert_eq(amount_added, 2, "Should only add what fits")
+    assert_eq(resource_manager.get_resource_amount("wood"), 10, "Should be at max capacity")
+    assert_true(resource_manager.is_resource_full("wood"), "Should be full")
+    assert_signal_emitted(resource_manager, "resource_full", "Should emit resource_full signal")
+
+func test_remove_resource_sufficient_amount():
+    # Test removing resources when sufficient amount available
+    resource_manager.setup_resource_type("food", 5, 3)
+    
+    var amount_removed = resource_manager.remove_resource("food", 2)
+    
+    assert_eq(amount_removed, 2, "Should remove requested amount")
+    assert_eq(resource_manager.get_resource_amount("food"), 1, "Resource amount should decrease")
+    assert_signal_emitted(resource_manager, "resource_changed", "Should emit resource_changed signal")
+
+func test_remove_resource_insufficient_amount():
+    # Test removing more resources than available
+    resource_manager.setup_resource_type("food", 5, 2)
+    
+    var amount_removed = resource_manager.remove_resource("food", 5)
+    
+    assert_eq(amount_removed, 2, "Should only remove what's available")
+    assert_eq(resource_manager.get_resource_amount("food"), 0, "Should be empty")
+    assert_true(resource_manager.is_resource_empty("food"), "Should be empty")
+    assert_signal_emitted(resource_manager, "resource_empty", "Should emit resource_empty signal")
+
+func test_resource_percentage_calculation():
+    # Test percentage calculations
+    resource_manager.setup_resource_type("wood", 10, 7)
+    
+    assert_eq(resource_manager.get_resource_percentage("wood"), 0.7, "Should calculate correct percentage")
+
+func test_unknown_resource_type():
+    # Test handling of unknown resource types
+    var amount = resource_manager.get_resource_amount("unknown")
+    
+    assert_eq(amount, 0, "Unknown resource should return 0")
+    assert_false(resource_manager.is_resource_full("unknown"), "Unknown resource should not be full")
+
+func test_signal_parameters():
+    # Test that signals emit correct parameters
+    resource_manager.setup_resource_type("wood", 10, 3)
+    
+    resource_manager.add_resource("wood", 2)
+    
+    assert_signal_emitted_with_parameters(
+        resource_manager, 
+        "resource_changed", 
+        ["wood", 3, 5], 
+        "Should emit signal with correct old and new amounts"
+    )
 ```
 
-### Integration Tests
+### GUT Integration Tests
+
+**File**: `tests/test_player_resource_integration.gd`
+
 ```gdscript
-# tests/test_player_resource_integration.gd
-func test_player_can_collect_wood()
-func test_player_cannot_collect_when_full()
-func test_building_requires_sufficient_resources()
-func test_ui_updates_when_resources_change()
+extends GutTest
+
+var player_scene: PackedScene
+var player: CharacterBody3D
+var test_scene: Node3D
+
+func before_all():
+    # Load the player scene for testing
+    player_scene = preload("res://scenes/players/player.tscn")
+
+func before_each():
+    # Create test environment
+    test_scene = Node3D.new()
+    add_child(test_scene)
+    
+    # Instantiate player
+    player = player_scene.instantiate()
+    test_scene.add_child(player)
+    
+    # Wait for player to be ready
+    await get_tree().process_frame
+
+func after_each():
+    test_scene.queue_free()
+
+func test_player_has_resource_manager():
+    # Test that player has resource manager component
+    assert_not_null(player.resource_manager, "Player should have resource manager")
+    assert_true(player.resource_manager is ResourceManager, "Should be ResourceManager instance")
+
+func test_player_can_collect_wood():
+    # Test wood collection through player interface
+    var initial_wood = player.resource_manager.get_resource_amount("wood")
+    
+    var success = player.add_wood(3)
+    
+    assert_true(success, "Should successfully add wood")
+    assert_eq(
+        player.resource_manager.get_resource_amount("wood"), 
+        initial_wood + 3, 
+        "Wood amount should increase"
+    )
+
+func test_player_cannot_collect_when_full():
+    # Test collection when inventory is full
+    var max_wood = player.resource_manager.get_available_space("wood") + player.resource_manager.get_resource_amount("wood")
+    
+    # Fill to capacity
+    player.resource_manager.add_resource("wood", max_wood)
+    
+    var success = player.add_wood(1)
+    
+    assert_false(success, "Should not be able to add wood when full")
+    assert_true(player.resource_manager.is_resource_full("wood"), "Should be at capacity")
+
+func test_building_requires_sufficient_resources():
+    # Test building system resource requirements
+    player.resource_manager.add_resource("wood", 5)  # Less than required 8
+    
+    player.enter_build_mode()
+    
+    assert_false(player.is_in_build_mode, "Should not enter build mode without enough wood")
+    
+    # Add enough wood
+    player.resource_manager.add_resource("wood", 5)  # Total now 10
+    
+    player.enter_build_mode()
+    
+    assert_true(player.is_in_build_mode, "Should enter build mode with enough wood")
 ```
+
+### GUT Test Runner Configuration
+
+**File**: `tests/test_runner_resource_refactor.gd`
+
+```gdscript
+extends GutTest
+
+# Simple test runner specifically for resource refactoring tests
+class_name ResourceRefactorTestRunner
+
+func _ready():
+    var gut = Gut.new()
+    add_child(gut)
+    
+    # Configure GUT for resource manager tests
+    gut.add_script("res://tests/test_resource_manager.gd")
+    gut.add_script("res://tests/test_player_resource_integration.gd")
+    
+    # Run tests
+    gut.test_scripts()
+```
+
+### Test Execution Integration
+
+Add to implementation steps:
+
+**Step 1.5: Set Up GUT Tests (Day 1)**
+- [ ] Create `tests/test_resource_manager.gd` with comprehensive unit tests
+- [ ] Create `tests/test_player_resource_integration.gd` for integration tests
+- [ ] Set up test runner scene for resource refactoring
+- [ ] Verify all tests pass before proceeding to next phase
+
+**Daily Testing Protocol:**
+- Run GUT tests after each major change
+- All tests must pass before moving to next implementation step
+- Add new tests for any edge cases discovered during development
 
 ## Migration Safety
 
