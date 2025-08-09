@@ -7,10 +7,13 @@ extends CharacterBody3D
 
 # Resource and interaction variables
 var wood: int = 0
+var food: int = 0  # New food inventory
 var max_inventory: int = 10  # Maximum items player can carry
+var max_food_inventory: int = 5  # Maximum food items player can carry
 var nearby_tree: Node3D = null
 var nearby_tent: Node3D = null
 var nearby_shelter: Node3D = null  # For tent shelter interaction
+var nearby_pumpkin: Node3D = null  # For pumpkin gathering
 var is_gathering: bool = false
 var is_building: bool = false
 
@@ -30,7 +33,15 @@ var tent_ghost: Node3D = null
 # Simple survival variables
 var health: float = 100.0
 var max_health: float = 100.0
+var hunger: float = 100.0  # New hunger system (0-100)
+var max_hunger: float = 100.0
 var is_night_time: bool = false
+
+# Hunger and food system configuration (easy to adjust)
+@export var hunger_decrease_rate: float = 0.5  # Hunger lost per minute (casual rate)
+@export var health_decrease_rate: float = 5.0  # Health lost per minute when starving
+@export var auto_eat_threshold: float = 30.0  # Auto-eat when hunger drops below this
+@export var pumpkin_hunger_restore: float = 25.0  # How much hunger pumpkins restore
 
 func _ready():
 	# Add player to group for day/night system to find
@@ -55,6 +66,9 @@ func _physics_process(delta):
 	# Update ghost position if in build mode
 	if is_in_build_mode and tent_ghost:
 		update_ghost_position()
+	
+	# Handle hunger and health system
+	handle_hunger_system(delta)
 	
 	# Simple night survival
 	# if is_night_time and not is_in_shelter:
@@ -153,6 +167,8 @@ func handle_interaction_input():
 			start_building_tent()
 		elif nearby_shelter and not is_in_shelter:
 			enter_shelter_manually()
+		elif nearby_pumpkin and not is_gathering:
+			start_gathering_pumpkin()
 	elif Input.is_action_just_released(action_key):
 		# Stop gathering if action key is released (building doesn't need to be stopped)
 		if is_gathering:
@@ -286,6 +302,33 @@ func get_action_key() -> String:
 		3: return "p4_action"
 	return "ui_accept"
 
+# Hunger and Food System
+func handle_hunger_system(delta: float):
+	# Decrease hunger over time (convert rate from per-minute to per-second)
+	hunger -= (hunger_decrease_rate / 10.0) * delta
+	hunger = max(hunger, 0.0)
+	
+	# Log hunger status occasionally (every 5 seconds)
+	var time_seconds = int(Time.get_ticks_msec() / 1000.0)
+	if time_seconds % 5 == 0 and (Time.get_ticks_msec() % 1000) < 16:
+		print("Player ", player_id, " - Hunger: ", int(hunger), "/", int(max_hunger), " Food: ", food)
+	
+	# Auto-eat if hunger is low and we have food
+	if hunger <= auto_eat_threshold and food > 0:
+		consume_food()
+	
+	# If hunger reaches 0, start losing health
+	if hunger <= 0.0:
+		take_damage((health_decrease_rate / 60.0) * delta)
+		if time_seconds % 3 == 0 and (Time.get_ticks_msec() % 1000) < 16:
+			print("Player ", player_id, " is starving! Health: ", int(health))
+
+func consume_food():
+	if food > 0:
+		food -= 1
+		hunger = min(hunger + pumpkin_hunger_restore, max_hunger)
+		print("Player ", player_id, " auto-ate food! Hunger restored to ", int(hunger), " (", food, " food remaining)")
+
 # Tree interaction methods
 func set_nearby_tree(tree: Node3D):
 	nearby_tree = tree
@@ -311,6 +354,30 @@ func stop_gathering():
 		is_gathering = false
 		play_animation("idle")
 		print("Player ", player_id, " stopped gathering")
+	elif is_gathering and nearby_pumpkin:
+		nearby_pumpkin.stop_gathering()
+		is_gathering = false
+		play_animation("idle")
+		print("Player ", player_id, " stopped gathering pumpkin")
+
+# Pumpkin interaction methods
+func set_nearby_pumpkin(pumpkin: Node3D):
+	nearby_pumpkin = pumpkin
+	print("Player ", player_id, " near pumpkin")
+
+func clear_nearby_pumpkin(pumpkin: Node3D):
+	if nearby_pumpkin == pumpkin:
+		nearby_pumpkin = null
+		if is_gathering:
+			stop_gathering()
+		print("Player ", player_id, " left pumpkin area")
+
+func start_gathering_pumpkin():
+	if nearby_pumpkin and nearby_pumpkin.has_method("start_gathering"):
+		if nearby_pumpkin.start_gathering(self):
+			is_gathering = true
+			play_animation("gather")
+			print("Player ", player_id, " started gathering pumpkin")
 
 # Tent interaction methods
 func set_nearby_tent(tent: Node3D):
@@ -390,6 +457,26 @@ func get_inventory_space() -> int:
 
 func is_inventory_full() -> bool:
 	return wood >= max_inventory
+
+func add_food(amount: int) -> bool:
+	var space_available = max_food_inventory - food
+	var amount_to_add = min(amount, space_available)
+	
+	if amount_to_add > 0:
+		food += amount_to_add
+		print("Player ", player_id, " collected ", amount_to_add, " food (", food, "/", max_food_inventory, ")")
+		
+		# Return true if we could collect all the food
+		return amount_to_add == amount
+	else:
+		print("Player ", player_id, " food inventory full! (", food, "/", max_food_inventory, ")")
+		return false
+
+func get_food_inventory_space() -> int:
+	return max_food_inventory - food
+
+func is_food_inventory_full() -> bool:
+	return food >= max_food_inventory
 
 # Simple day/night survival methods
 func on_day_started():
