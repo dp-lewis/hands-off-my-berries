@@ -7,6 +7,7 @@ extends CharacterBody3D
 
 # Resource and interaction variables
 var wood: int = 0
+var max_inventory: int = 10  # Maximum items player can carry
 var nearby_tree: Node3D = null
 var is_gathering: bool = false
 
@@ -87,5 +88,21 @@ func stop_gathering():
 		print("Player ", player_id, " stopped gathering")
 
 func add_wood(amount: int):
-	wood += amount
-	print("Player ", player_id, " now has ", wood, " wood")
+	var space_available = max_inventory - wood
+	var amount_to_add = min(amount, space_available)
+	
+	if amount_to_add > 0:
+		wood += amount_to_add
+		print("Player ", player_id, " collected ", amount_to_add, " wood (", wood, "/", max_inventory, ")")
+		
+		# Return true if we could collect all the wood
+		return amount_to_add == amount
+	else:
+		print("Player ", player_id, " inventory full! (", wood, "/", max_inventory, ")")
+		return false
+
+func get_inventory_space() -> int:
+	return max_inventory - wood
+
+func is_inventory_full() -> bool:
+	return wood >= max_inventory

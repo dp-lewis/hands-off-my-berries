@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://cfaf2owsl7m5"]
+
+[ext_resource type="PackedScene" uid="uid://cfhdj32052dsd" path="res://models/kenney_nature-kit/tent_detailedClosed.glb" id="1_wrbet"]
+
+[node name="tent_detailedClosed2" instance=ExtResource("1_wrbet")]
+
+[node name="tmpParent" parent="." index="0"]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0.153079, 0)

@@ -11,8 +11,20 @@ func _ready():
 func _on_player_entered(body):
 	# Check if it's a player that can collect wood
 	if body.has_method("add_wood"):
-		body.add_wood(wood_amount)
-		print("Collected ", wood_amount, " wood!")
+		var space_available = body.get_inventory_space()
 		
-		# Remove the wood pile after collection
-		queue_free()
+		if space_available <= 0:
+			print("Player inventory full - can't collect wood!")
+			return
+		
+		# Try to give the wood to the player
+		var amount_to_give = min(wood_amount, space_available)
+		var successfully_added = body.add_wood(amount_to_give)
+		
+		if successfully_added:
+			# Player took all the wood
+			queue_free()
+		else:
+			# Player couldn't take all wood, reduce pile amount
+			wood_amount -= amount_to_give
+			print("Wood pile now has ", wood_amount, " wood remaining")
