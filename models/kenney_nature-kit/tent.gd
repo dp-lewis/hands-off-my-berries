@@ -226,13 +226,22 @@ func start_building(player: Node) -> bool:
 		print("Tent already being built!")
 		return false
 	
-	# Check if player has enough wood
-	if player.wood < wood_cost:
-		print("Need ", wood_cost, " wood to build tent (have ", player.wood, ")")
+	# Check if player has enough wood using ResourceManager
+	var resource_manager = player.get_node("ResourceManager")
+	if not resource_manager:
+		print("Error: Player has no ResourceManager component!")
+		return false
+	
+	var current_wood = resource_manager.get_resource_amount("wood")
+	if current_wood < wood_cost:
+		print("Need ", wood_cost, " wood to build tent (have ", current_wood, ")")
 		return false
 	
 	# Deduct wood and start building
-	player.wood -= wood_cost
+	if not resource_manager.remove_resource("wood", wood_cost):
+		print("Error: Failed to deduct wood for tent construction!")
+		return false
+	
 	current_builder = player
 	is_being_built = true
 	build_progress = 0.0
@@ -240,8 +249,9 @@ func start_building(player: Node) -> bool:
 	# Create progress bar for building
 	create_building_progress_bar()
 	
+	var remaining_wood = resource_manager.get_resource_amount("wood")
 	print("Started building tent... (", build_time, " seconds)")
-	print("Player has ", player.wood, " wood remaining")
+	print("Player has ", remaining_wood, " wood remaining")
 	return true
 
 func complete_building():
