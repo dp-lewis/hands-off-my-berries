@@ -35,6 +35,8 @@ var health: float = 100.0
 var max_health: float = 100.0
 var hunger: float = 100.0  # New hunger system (0-100)
 var max_hunger: float = 100.0
+var tiredness: float = 100.0  # New tiredness system (0-100)
+var max_tiredness: float = 100.0
 var is_night_time: bool = false
 
 # Hunger and food system configuration (easy to adjust)
@@ -42,6 +44,15 @@ var is_night_time: bool = false
 @export var health_decrease_rate: float = 5.0  # Health lost per minute when starving
 @export var auto_eat_threshold: float = 30.0  # Auto-eat when hunger drops below this
 @export var pumpkin_hunger_restore: float = 25.0  # How much hunger pumpkins restore
+
+# Tiredness system configuration (easy to adjust)
+@export var base_tiredness_rate: float = 1.0  # Base tiredness lost per minute
+@export var walking_tiredness_rate: float = 0.1  # Tiredness lost per second while moving
+@export var tree_chopping_tiredness_cost: float = 5.0  # Tiredness lost when chopping a tree
+@export var building_tiredness_cost: float = 3.0  # Tiredness lost when building
+@export var pumpkin_gathering_tiredness_cost: float = 2.0  # Tiredness lost when gathering pumpkin
+@export var tent_recovery_rate: float = 10.0  # Tiredness recovered per minute in tent
+@export var tiredness_health_decrease_rate: float = 3.0  # Health lost per minute when exhausted
 
 func _ready():
 	# Add player to group for day/night system to find
@@ -69,6 +80,9 @@ func _physics_process(delta):
 	
 	# Handle hunger and health system
 	handle_hunger_system(delta)
+	
+	# Handle tiredness system
+	handle_tiredness_system(delta)
 	
 	# Simple night survival
 	# if is_night_time and not is_in_shelter:
@@ -329,6 +343,40 @@ func consume_food():
 		hunger = min(hunger + pumpkin_hunger_restore, max_hunger)
 		print("Player ", player_id, " auto-ate food! Hunger restored to ", int(hunger), " (", food, " food remaining)")
 
+# Tiredness System
+func handle_tiredness_system(delta: float):
+	# Base tiredness decrease over time (convert rate from per-minute to per-second)
+	tiredness -= (base_tiredness_rate / 60.0) * delta
+	
+	# Additional tiredness from walking/moving
+	var input_dir = get_input_direction()
+	if input_dir.length() > 0.1:  # Player is moving
+		tiredness -= walking_tiredness_rate * delta
+	
+	# Recover tiredness if in shelter
+	if is_in_shelter:
+		tiredness += (tent_recovery_rate / 60.0) * delta
+	
+	# Clamp tiredness to valid range
+	tiredness = clamp(tiredness, 0.0, max_tiredness)
+	
+	# Log tiredness status occasionally (every 7 seconds to offset from hunger logging)
+	var time_seconds = int(Time.get_ticks_msec() / 1000.0)
+	if time_seconds % 7 == 0 and (Time.get_ticks_msec() % 1000) < 16:
+		var status = " (Resting)" if is_in_shelter else ""
+		print("Player ", player_id, " - Tiredness: ", int(tiredness), "/", int(max_tiredness), status)
+	
+	# If tiredness reaches 0, start losing health
+	if tiredness <= 0.0:
+		take_damage((tiredness_health_decrease_rate / 60.0) * delta)
+		if time_seconds % 4 == 0 and (Time.get_ticks_msec() % 1000) < 16:
+			print("Player ", player_id, " is exhausted! Health: ", int(health))
+
+func lose_tiredness(amount: float, activity: String = ""):
+	tiredness = max(tiredness - amount, 0.0)
+	if activity != "":
+		print("Player ", player_id, " is tired from ", activity, " (Tiredness: ", int(tiredness), ")")
+
 # Tree interaction methods
 func set_nearby_tree(tree: Node3D):
 	nearby_tree = tree
@@ -346,6 +394,7 @@ func start_gathering_tree():
 		if nearby_tree.start_gathering(self):
 			is_gathering = true
 			play_animation("gather")
+			lose_tiredness(tree_chopping_tiredness_cost, "chopping tree")
 			print("Player ", player_id, " started gathering")
 
 func stop_gathering():
@@ -377,6 +426,7 @@ func start_gathering_pumpkin():
 		if nearby_pumpkin.start_gathering(self):
 			is_gathering = true
 			play_animation("gather")
+			lose_tiredness(pumpkin_gathering_tiredness_cost, "gathering pumpkin")
 			print("Player ", player_id, " started gathering pumpkin")
 
 # Tent interaction methods
@@ -394,6 +444,7 @@ func clear_nearby_tent(tent: Node3D):
 func start_building_tent():
 	if nearby_tent and nearby_tent.has_method("start_building"):
 		if nearby_tent.start_building(self):
+			lose_tiredness(building_tiredness_cost, "building tent")
 			print("Player ", player_id, " initiated tent construction")
 			# Note: Building continues in background, no need to set is_building flag
 
@@ -423,7 +474,7 @@ func enter_tent_shelter(tent: Node3D):
 	# This method is called by the tent for automatic tracking
 	is_in_shelter = true
 	current_shelter = tent
-	print("Player ", player_id, " is now sheltered in tent")
+	print("Player ", player_id, " is now sheltered in tent - resting and recovering!")
 	# Add shelter benefits here (weather protection, healing, etc.)
 
 func exit_tent_shelter(tent: Node3D):
@@ -511,3 +562,9 @@ func get_health() -> float:
 
 func get_health_percentage() -> float:
 	return health / max_health
+
+func get_tiredness() -> float:
+	return tiredness
+
+func get_tiredness_percentage() -> float:
+	return tiredness / max_tiredness
