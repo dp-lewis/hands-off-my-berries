@@ -1,14 +1,58 @@
 # Metropolis - TODO List
 
-## 🚨 Immediate Tasks
+## ✅ Completed Features
 
-### Tent Shelter System
-- [ ] **FIX: Tent entry not working** - Players can't figure out how to enter built tents for shelter
-  - [ ] Debug tent shelter area detection
-  - [ ] Verify action key priority system in player.gd
-  - [ ] Test interaction between nearby_shelter and tent areas
-  - [ ] Add clearer visual feedback when tent is enterable
-  - [ ] Consider alternative entry method (automatic vs manual)
+### Survival Systems
+- [x] **Comprehensive survival mechanics implemented**
+  - [x] Health, Hunger, and Tiredness systems with interconnected effects
+  - [x] Auto-consumption system for food when hunger is low
+  - [x] Tiredness penalties from activities (gathering, building, walking)
+  - [x] Health loss when hunger or tiredness reach zero
+  - [x] Nighttime tiredness penalty when not in shelter
+
+### Day/Night Cycle
+- [x] **Full day/night system with survival integration**
+  - [x] 60-second day + 30-second night cycles
+  - [x] Visual lighting changes between day and night
+  - [x] Day counter with persistent tracking across cycles
+  - [x] Enhanced survival pressure during nighttime
+
+### Resource Management
+- [x] **Multi-resource inventory system**
+  - [x] Separate inventories for wood (10 max) and food (5 max)
+  - [x] Resource gathering from trees (wood) and pumpkins (food)
+  - [x] Progress-based gathering with visual feedback
+  - [x] Inventory full protection and space checking
+
+### Building System
+- [x] **Complete tent construction system**
+  - [x] Ghost preview system for tent placement
+  - [x] Resource cost requirement (8 wood) for tent construction
+  - [x] Progress-based building with player interaction
+  - [x] Build mode toggle (Tab key for keyboard player)
+
+### Shelter System
+- [x] **Functional tent shelter mechanics**
+  - [x] Tent entry/exit system with area detection
+  - [x] Tiredness recovery while sheltered (10.0 per minute)
+  - [x] Protection from nighttime tiredness penalties
+  - [x] Clear shelter status tracking and feedback
+
+### User Interface
+- [x] **Simple, functional UI system**
+  - [x] Individual player stat displays (top-left corner)
+  - [x] Global day counter (bottom-center, prominent display)
+  - [x] Real-time stat updates with color-coded player identification
+  - [x] Deferred UI creation to prevent timing errors
+
+### Player System
+- [x] **Complete player controller implementation**
+  - [x] Smooth character movement with acceleration/friction
+  - [x] Character rotation to face movement direction
+  - [x] Animation system with state mapping (walk, idle, gather)
+  - [x] Multi-interaction system (trees, pumpkins, tents, shelters)
+
+## 🚨 Immediate Tasks
 
 ### Input System
 - [ ] Set up Input Map in Project Settings for multiplayer
@@ -19,11 +63,8 @@
   - [ ] Test gamepad detection and input
 
 ### Player System
-- [ ] Test basic player movement with current script
-- [ ] Tune movement parameters (speed, acceleration, friction)
 - [ ] Add player visual identification (colors, numbers, etc.)
 - [ ] Create player spawning system for multiple players
-- [ ] Add player interaction/action button functionality
 
 ## 🎮 Core Gameplay Features
 
@@ -34,18 +75,15 @@
 - [ ] Test camera with multiple players moving
 
 ### Resource System
-- [ ] Design resource types (Wood, Stone, Food, Gold, etc.)
-- [ ] Create resource nodes (trees, quarries, etc.)
-- [ ] Implement resource gathering mechanics
-- [ ] Add player inventory system
-- [ ] Create resource sharing/competition mechanics
+- [ ] Expand resource types (Stone, Gold, etc.)
+- [ ] Create additional resource nodes (quarries, mines, etc.)
+- [ ] Add resource sharing/competition mechanics
 
 ### Building System
-- [ ] Design building types and categories
-- [ ] Create building placement system
-- [ ] Implement construction requirements
-- [ ] Add building preview/ghost system
+- [ ] Design additional building types beyond tents
+- [ ] Expand construction requirements and recipes
 - [ ] Create building collision and validation
+- [ ] Add building upgrade system
 
 ### Villager System
 - [ ] Design villager AI and behavior
@@ -78,9 +116,10 @@
 - [ ] Add victory condition systems
 
 ### Survival Elements
-- [ ] Implement day/night cycle
+- [x] Implement day/night cycle
+- [x] Create hunger/health mechanics  
+- [x] Add tiredness/fatigue system
 - [ ] Add weather system
-- [ ] Create hunger/health mechanics
 - [ ] Design monster/threat system
 
 ### Map and World
@@ -126,8 +165,9 @@
 ## 📚 Documentation
 
 ### Development Docs
-- [ ] Update Game Design Document based on implementation
-- [ ] Create technical architecture documentation
+- [x] Update Game Design Document based on implementation
+- [x] Create technical architecture documentation
+- [x] Document design decisions and rationale
 - [ ] Document input mapping and controls
 - [ ] Write gameplay mechanics documentation
 
@@ -158,12 +198,19 @@
 
 ### Current Status
 - ✅ Basic project structure created
-- ✅ Player movement system implemented (needs input mapping)
+- ✅ Player movement system implemented 
 - ✅ Game Design Document written
 - ✅ Development environment set up
+- ✅ Complete survival mechanics (health, hunger, tiredness)
+- ✅ Day/night cycle with visual feedback and day counter
+- ✅ Resource gathering system (wood from trees, food from pumpkins)
+- ✅ Building system with tent construction and ghost preview
+- ✅ Shelter system with tent entry/exit and recovery mechanics
+- ✅ Simple UI system with player stats and global day display
+- ✅ Design decisions documented in /docs/ folder
 
 ### Next Priority
-Focus on getting the input mapping working and testing basic multiplayer movement before moving to camera and resource systems.
+Set up input mapping for multiplayer controllers and test local multiplayer with multiple players before expanding to additional building types and features.
 
 ### Important Reminders
 - Test frequently with actual controllers
@@ -173,4 +220,4 @@ Focus on getting the input mapping working and testing basic multiplayer movemen
 
 ---
 
-*Last Updated: [Date will be updated as items are completed]*
+*Last Updated: August 9, 2025 - Major survival systems, UI, and shelter mechanics completed*
