@@ -1,4 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://dhycgw31gv2xr"]
+[gd_scene load_steps=4 format=3 uid="uid://dhycgw31gv2xr"]
+
+[ext_resource type="Script" uid="uid://bnvukd1g8cqw8" path="res://scenes/players/player.gd" id="1_plyga"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_5iv5l"]
 radius = 0.3
@@ -9,6 +11,7 @@ radius = 0.3
 height = 1.5
 
 [node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_plyga")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.74998, 0)
