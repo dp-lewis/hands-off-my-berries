@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://woxo7m8qhipo"]
+[gd_scene load_steps=8 format=3 uid="uid://woxo7m8qhipo"]
 
 [ext_resource type="Script" uid="uid://cjodfbct1ml6h" path="res://systems/simple_game_manager.gd" id="1_onwf1"]
 [ext_resource type="PackedScene" uid="uid://dhycgw31gv2xr" path="res://scenes/players/player.tscn" id="1_voxel"]
 [ext_resource type="PackedScene" uid="uid://b8b3dbuxtoblb" path="res://models/kenney-survival-kit/tree.tscn" id="2_awkes"]
+[ext_resource type="PackedScene" uid="uid://dhpm7qu8e00ha" path="res://models/kenney_nature-kit/crop_carrot.tscn" id="4_53nj4"]
 
 [sub_resource type="Environment" id="Environment_brxo2"]
 ambient_light_source = 2
@@ -40,37 +41,40 @@ size = 16.714
 
 [node name="Player" parent="." instance=ExtResource("1_voxel")]
 
-[node name="Node3D" type="Node3D" parent="."]
+[node name="Trees" type="Node3D" parent="."]
 
-[node name="tree2" parent="Node3D" instance=ExtResource("2_awkes")]
+[node name="tree2" parent="Trees" instance=ExtResource("2_awkes")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.46687, 0, -0.231797)
 
-[node name="tree3" parent="Node3D" instance=ExtResource("2_awkes")]
+[node name="tree3" parent="Trees" instance=ExtResource("2_awkes")]
 transform = Transform3D(0.806744, 0, -0.590901, 0, 1, 0, 0.590901, 0, 0.806744, -6.57277, 0, -0.231797)
 
-[node name="tree4" parent="Node3D" instance=ExtResource("2_awkes")]
+[node name="tree4" parent="Trees" instance=ExtResource("2_awkes")]
 transform = Transform3D(0.418406, 0, -0.90826, 0, 1, 0, 0.90826, 0, 0.418406, -5.19516, 0, 1.36239)
 
-[node name="tree5" parent="Node3D" instance=ExtResource("2_awkes")]
+[node name="tree5" parent="Trees" instance=ExtResource("2_awkes")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.71683, 0, -18.2902)
 
-[node name="tree8" parent="Node3D" instance=ExtResource("2_awkes")]
+[node name="tree8" parent="Trees" instance=ExtResource("2_awkes")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.7438, 0, -47.4462)
 
-[node name="tree6" parent="Node3D" instance=ExtResource("2_awkes")]
+[node name="tree6" parent="Trees" instance=ExtResource("2_awkes")]
 transform = Transform3D(0.806744, 0, -0.590901, 0, 1, 0, 0.590901, 0, 0.806744, -0.38907, 0, -18.2902)
 
-[node name="tree7" parent="Node3D" instance=ExtResource("2_awkes")]
+[node name="tree7" parent="Trees" instance=ExtResource("2_awkes")]
 transform = Transform3D(0.418406, 0, -0.90826, 0, 1, 0, 0.90826, 0, 0.418406, -47.8701, 0, -36.5977)
 
-[node name="tree11" parent="Node3D" instance=ExtResource("2_awkes")]
+[node name="tree11" parent="Trees" instance=ExtResource("2_awkes")]
 transform = Transform3D(0.418406, 0, -0.90826, 0, 1, 0, 0.90826, 0, 0.418406, -47.8701, 0, -36.5977)
 
-[node name="tree12" parent="Node3D" instance=ExtResource("2_awkes")]
+[node name="tree12" parent="Trees" instance=ExtResource("2_awkes")]
 transform = Transform3D(0.418406, 0, -0.90826, 0, 1, 0, 0.90826, 0, 0.418406, 47.26, 0, -36.5977)
 
-[node name="tree9" parent="Node3D" instance=ExtResource("2_awkes")]
+[node name="tree9" parent="Trees" instance=ExtResource("2_awkes")]
 transform = Transform3D(0.418406, 0, -0.90826, 0, 1, 0, 0.90826, 0, 0.418406, -30.4561, 0, 13.5546)
 
-[node name="tree10" parent="Node3D" instance=ExtResource("2_awkes")]
+[node name="tree10" parent="Trees" instance=ExtResource("2_awkes")]
 transform = Transform3D(0.418406, 0, -0.90826, 0, 1, 0, 0.90826, 0, 0.418406, 30.4431, 0, 13.5546)
+
+[node name="crop_carrot2" parent="." instance=ExtResource("4_53nj4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.78628, 0, 1.85941)

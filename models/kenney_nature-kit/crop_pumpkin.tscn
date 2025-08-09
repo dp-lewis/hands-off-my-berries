@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3 uid="uid://cs05wsnjh4clr"]
+
+[ext_resource type="PackedScene" uid="uid://cvnqgfvcvf1t0" path="res://models/kenney_nature-kit/crop_pumpkin.glb" id="1_8xp1w"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_8xp1w"]
+height = 0.668457
+radius = 0.45166
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_7i5t4"]
+height = 0.765137
+radius = 0.890625
+
+[node name="crop_pumpkin2" instance=ExtResource("1_8xp1w")]
+
+[node name="tmpParent" parent="." index="0"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." index="1"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.155518, 0)
+shape = SubResource("CylinderShape3D_8xp1w")
+
+[node name="Area3D" type="Area3D" parent="." index="2"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.198975, 0)
+shape = SubResource("CylinderShape3D_7i5t4")
