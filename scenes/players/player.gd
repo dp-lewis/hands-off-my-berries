@@ -44,14 +44,14 @@ var max_tiredness: float = 100.0
 var is_night_time: bool = false
 
 # Hunger and food system configuration (easy to adjust)
-@export var hunger_decrease_rate: float = 0.5  # Hunger lost per minute (casual rate)
+@export var hunger_decrease_rate: float = 2.0  # Hunger lost per minute (faster rate)
 @export var health_decrease_rate: float = 5.0  # Health lost per minute when starving
 @export var auto_eat_threshold: float = 30.0  # Auto-eat when hunger drops below this
 @export var pumpkin_hunger_restore: float = 25.0  # How much hunger pumpkins restore
 
 # Tiredness system configuration (easy to adjust)
-@export var base_tiredness_rate: float = 1.0  # Base tiredness lost per minute
-@export var walking_tiredness_rate: float = 0.1  # Tiredness lost per second while moving
+@export var base_tiredness_rate: float = 3.0  # Base tiredness lost per minute (faster rate)
+@export var walking_tiredness_rate: float = 0.3  # Tiredness lost per second while moving (faster rate)
 @export var tree_chopping_tiredness_cost: float = 5.0  # Tiredness lost when chopping a tree
 @export var building_tiredness_cost: float = 3.0  # Tiredness lost when building
 @export var pumpkin_gathering_tiredness_cost: float = 2.0  # Tiredness lost when gathering pumpkin
