@@ -32,7 +32,7 @@ var tent_ghost: Node3D = null
 
 # Simple UI reference
 var player_ui: Control = null
-@export var simple_ui_scene: PackedScene = preload("res://ui/simple_player_ui.tscn")
+@export var player_ui_scene: PackedScene = preload("res://ui/player_ui.tscn")
 
 # Simple survival variables
 var health: float = 100.0
@@ -64,7 +64,7 @@ func _ready():
 	add_to_group("players")
 	
 	# Create simple UI
-	create_simple_ui()
+	create_player_ui()
 
 func _physics_process(delta):
 	var input_dir = get_input_direction()
@@ -583,10 +583,10 @@ func get_tiredness() -> float:
 func get_tiredness_percentage() -> float:
 	return tiredness / max_tiredness
 
-# Simple UI Management
-func create_simple_ui():
-	if simple_ui_scene and not player_ui:
-		player_ui = simple_ui_scene.instantiate()
+# Player UI Management
+func create_player_ui():
+	if player_ui_scene and not player_ui:
+		player_ui = player_ui_scene.instantiate()
 		# Use call_deferred to avoid "parent node is busy" error
 		get_tree().current_scene.add_child.call_deferred(player_ui)
 		# Also defer the setup to ensure the UI is added first
@@ -595,4 +595,4 @@ func create_simple_ui():
 func setup_ui_for_player():
 	if player_ui and player_ui.has_method("setup_for_player"):
 		player_ui.setup_for_player(self)
-		print("Created simple UI for Player ", player_id)
+		print("Created positioned UI for Player ", player_id)
