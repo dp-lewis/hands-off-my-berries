@@ -39,7 +39,11 @@ transform = Transform3D(1, 0, 0, 0, 0.573577, 0.819152, 0, -0.819152, 0.573577, 
 fov = 40.0
 size = 16.714
 
-[node name="Player" parent="." instance=ExtResource("1_voxel")]
+[node name="Player0" parent="." instance=ExtResource("1_voxel")]
+
+[node name="Player1" parent="." instance=ExtResource("1_voxel")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.0268, 0, 0)
+player_id = 1
 
 [node name="Trees" type="Node3D" parent="."]
 
