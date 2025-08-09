@@ -10,13 +10,18 @@ extends Node
 var current_time: float = 0.0
 var total_cycle_time: float
 var is_day: bool = true
+var current_day: int = 1  # Start at day 1
 var directional_light: DirectionalLight3D
 var world_environment: Environment
 
 signal day_started
 signal night_started
+signal new_day(day_number: int)  # New signal for day changes
 
 func _ready():
+	# Add to group for easy access
+	add_to_group("day_night_system")
+	
 	total_cycle_time = day_duration + night_duration
 	
 	# Find the directional light and environment in the scene
@@ -36,6 +41,8 @@ func _process(delta):
 	# Check if we've completed a full cycle
 	if current_time >= total_cycle_time:
 		current_time = 0.0
+		current_day += 1  # Increment day counter when cycle completes
+		new_day.emit(current_day)  # Emit new day signal
 	
 	# Check for day/night transitions
 	var was_day = is_day
@@ -45,10 +52,10 @@ func _process(delta):
 	if is_day != was_day:
 		if is_day:
 			day_started.emit()
-			print("🌅 Day begins!")
+			print("🌅 Day ", current_day, " begins!")
 		else:
 			night_started.emit()
-			print("🌙 Night falls!")
+			print("🌙 Night falls on day ", current_day, "!")
 	
 	# Update lighting
 	update_lighting()
@@ -135,6 +142,9 @@ func get_is_day() -> bool:
 
 func get_is_night() -> bool:
 	return not is_day
+
+func get_current_day() -> int:
+	return current_day
 
 func get_time_remaining() -> float:
 	"""Returns time remaining in current period"""

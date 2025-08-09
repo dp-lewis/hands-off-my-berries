@@ -2,6 +2,7 @@ extends Node
 
 var day_night_system: Node
 var players: Array[Node] = []
+var day_display: Control = null
 
 func _ready():
 	# Create the day/night system
@@ -12,6 +13,9 @@ func _ready():
 	# Connect to day/night signals
 	day_night_system.day_started.connect(_on_day_started)
 	day_night_system.night_started.connect(_on_night_started)
+	
+	# Create global day display
+	create_day_display()
 	
 	# Find all players
 	call_deferred("find_players")
@@ -24,6 +28,14 @@ func find_players():
 	
 	players = get_tree().get_nodes_in_group("players")
 	print("Found ", players.size(), " players")
+
+func create_day_display():
+	# Create the global day display UI
+	var day_display_scene = preload("res://ui/day_display.tscn")
+	if day_display_scene:
+		day_display = day_display_scene.instantiate()
+		get_tree().current_scene.add_child.call_deferred(day_display)
+		print("Created global day display")
 
 func _on_day_started():
 	# Tell all players it's day
