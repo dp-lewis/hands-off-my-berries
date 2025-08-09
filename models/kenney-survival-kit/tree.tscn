@@ -1,10 +1,15 @@
-[gd_scene load_steps=3 format=3 uid="uid://b8b3dbuxtoblb"]
+[gd_scene load_steps=5 format=3 uid="uid://b8b3dbuxtoblb"]
 
 [ext_resource type="PackedScene" uid="uid://jufalnw7xdj2" path="res://models/kenney-survival-kit/tree.glb" id="1_s4cnd"]
+[ext_resource type="Script" uid="uid://dyjhv8hsrfxqb" path="res://models/kenney-survival-kit/tree.gd" id="2_fyjqj"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_s4cnd"]
 
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_fyjqj"]
+radius = 0.877441
+
 [node name="tree2" instance=ExtResource("1_s4cnd")]
+script = ExtResource("2_fyjqj")
 
 [node name="tree" parent="." index="0"]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
@@ -14,3 +19,9 @@ transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.98745, 0)
 shape = SubResource("CylinderShape3D_s4cnd")
+
+[node name="Area3D" type="Area3D" parent="." index="2"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.00012, 0)
+shape = SubResource("CylinderShape3D_fyjqj")
