@@ -43,6 +43,12 @@ func setup_for_player(player: Node3D):
 	target_player = player
 	player_id = player.player_id
 	
+	# Connect to ResourceManager signals for reactive updates
+	if target_player.resource_manager:
+		target_player.resource_manager.resource_changed.connect(_on_resource_changed)
+		target_player.resource_manager.resource_full.connect(_on_resource_full)
+		target_player.resource_manager.resource_empty.connect(_on_resource_empty)
+	
 	# Use call_deferred to ensure all nodes are ready
 	call_deferred("setup_ui_elements")
 
@@ -95,10 +101,10 @@ func position_ui_for_player():
 
 func _process(_delta):
 	if target_player:
-		update_ui_values()
+		update_non_resource_ui_values()
 
-func update_ui_values():
-	# Check if target player and UI elements exist
+func update_non_resource_ui_values():
+	# Only update health, hunger, and tiredness - resources are updated via signals
 	if not target_player:
 		return
 	
@@ -114,7 +120,27 @@ func update_ui_values():
 	if tiredness_bar:
 		tiredness_bar.value = target_player.get_tiredness_percentage() * 100
 	
-	# Update inventory labels
+	# Color-code bars based on values
+	update_bar_colors()
+
+func update_ui_values():
+	# Keep this method for initial setup - it updates everything including resources
+	if not target_player:
+		return
+	
+	# Update health bar
+	if health_bar:
+		health_bar.value = target_player.get_health_percentage() * 100
+	
+	# Update hunger bar  
+	if hunger_bar:
+		hunger_bar.value = (target_player.hunger / target_player.max_hunger) * 100
+	
+	# Update tiredness bar
+	if tiredness_bar:
+		tiredness_bar.value = target_player.get_tiredness_percentage() * 100
+	
+	# Update inventory labels (for initial setup)
 	if wood_label:
 		var wood_amount = target_player.resource_manager.get_resource_amount("wood") if target_player.resource_manager else 0
 		wood_label.text = "🪵 " + str(wood_amount)
@@ -152,3 +178,21 @@ func update_bar_colors():
 			tiredness_bar.modulate = Color.YELLOW
 		else:
 			tiredness_bar.modulate = Color.RED
+
+# ResourceManager signal handlers for reactive UI updates
+func _on_resource_changed(resource_type: String, _old_amount: int, new_amount: int):
+	# Update specific resource display when it changes
+	if resource_type == "wood" and wood_label:
+		wood_label.text = "🪵 " + str(new_amount)
+	elif resource_type == "food" and food_label:
+		food_label.text = "🍖 " + str(new_amount)
+
+func _on_resource_full(resource_type: String):
+	# Visual feedback when resource inventory is full
+	print("Player ", player_id + 1, " ", resource_type, " inventory is full!")
+	# Could add visual indicators here like flashing or color changes
+
+func _on_resource_empty(resource_type: String):
+	# Visual feedback when resource runs out
+	print("Player ", player_id + 1, " is out of ", resource_type, "!")
+	# Could add visual indicators here like warning colors
