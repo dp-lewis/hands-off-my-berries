@@ -54,17 +54,46 @@
 
 ## 🚨 Immediate Tasks
 
-### Input System
-- [ ] Set up Input Map in Project Settings for multiplayer
-  - [ ] Add `p2_left`, `p2_right`, `p2_up`, `p2_down` for Player 2 (Gamepad 1)
-  - [ ] Add `p3_left`, `p3_right`, `p3_up`, `p3_down` for Player 3 (Gamepad 2)
-  - [ ] Add `p4_left`, `p4_right`, `p4_up`, `p4_down` for Player 4 (Gamepad 3)
-  - [ ] Map keyboard controls for Player 1 (WASD/Arrow keys)
-  - [ ] Test gamepad detection and input
+### Player System Refactoring (HIGHEST PRIORITY)
+- [ ] **Step 1: Component Foundation** (4-6 hours)
+  - [ ] Create PlayerComponent base class
+  - [ ] Create PlayerController coordinator 
+  - [ ] Define component interfaces
+  - [ ] Set up component lifecycle management
 
-### Player System
+- [ ] **Step 2: Extract Movement Component** (6-8 hours)
+  - [ ] Create PlayerMovement component (~120 lines from player.gd)
+  - [ ] Migrate movement, physics, and animation logic
+  - [ ] Test movement functionality independently
+
+- [ ] **Step 3: Extract Survival Component** (6-8 hours)
+  - [ ] Create PlayerSurvival component (~150 lines from player.gd)
+  - [ ] Migrate health, hunger, tiredness systems
+  - [ ] Test survival mechanics independently
+
+- [ ] **Step 4: Extract Builder Component** (8-10 hours)
+  - [ ] Create PlayerBuilder component (~200 lines from player.gd)
+  - [ ] Migrate building mode, ghost preview, construction logic
+  - [ ] Test building system independently
+
+- [ ] **Step 5: Extract Interaction Component** (6-8 hours)
+  - [ ] Create PlayerInteractor component (~100 lines from player.gd)
+  - [ ] Migrate gathering, shelter, object interaction logic
+  - [ ] Test interaction system independently
+
+- [ ] **Step 6: Extract Input Handler Component** (4-6 hours)
+  - [ ] Create PlayerInputHandler component with multi-player support
+  - [ ] Implement device-specific input mapping (keyboard + 3 gamepads)
+  - [ ] Test input isolation between players
+
+**📋 Documentation:** See `/docs/player-system-refactoring-plan.md` for complete details
+**🎯 Goal:** Transform 639-line monolithic player script into clean component architecture
+**⏱️ Timeline:** 34-46 hours (2-3 weeks focused development)
+
+### Multiplayer Foundation (After Player Refactoring)
 - [ ] Add player visual identification (colors, numbers, etc.)
 - [ ] Create player spawning system for multiple players
+- [ ] Test multiplayer with refactored component system
 
 ## 🎮 Core Gameplay Features
 
