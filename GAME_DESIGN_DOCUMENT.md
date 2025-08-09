@@ -6,38 +6,38 @@
 **Metropolis** (Working Title)
 
 ### 1.2 Genre
-Local Multiplayer City Builder / Survival RTS
+Local Multiplayer Survival / Building Game
 
 ### 1.3 Platform
 PC (Windows, macOS, Linux)
 
 ### 1.4 Target Audience
 - Primary: Couch co-op enthusiasts (ages 8+)
-- Secondary: Casual strategy and survival game players
+- Secondary: Casual survival and building game players
 - Family-friendly multiplayer gaming
 
 ### 1.5 Core Concept
-Metropolis is a couch-based local multiplayer game where players collaborate and compete to build the most successful town. Combining survival mechanics reminiscent of Minecraft's survival mode with real-time strategy elements, players must gather resources, construct buildings, and manage villagers while working together to overcome environmental challenges.
+Metropolis is a couch-based local multiplayer survival game where players must work together to survive in a challenging environment. Combining resource gathering and building mechanics with survival elements, players must collect materials, construct shelters and tools, and overcome environmental threats while managing their basic needs for food, warmth, and safety.
 
 ## 2. Gameplay Overview
 
 ### 2.1 Core Gameplay Loop
 1. **Resource Gathering** - Players explore and collect materials (wood, stone, food, etc.)
-2. **Construction** - Build essential structures (houses, workshops, defenses)
-3. **Population Management** - Spawn and direct villagers to assist with tasks
-4. **Survival Challenges** - Overcome weather, monsters, or resource scarcity
-5. **Town Development** - Expand and improve the settlement
-6. **Victory Conditions** - Achieve specific goals or outlast other players
+2. **Survival Management** - Monitor hunger, health, temperature, and fatigue
+3. **Shelter Construction** - Build protective structures and safe zones
+4. **Tool & Equipment Crafting** - Create better tools and survival gear
+5. **Environmental Challenges** - Overcome weather, hazards, and threats
+6. **Base Expansion** - Improve and expand your survival settlement
 
 ### 2.2 Player Count
 - 2-4 players (local multiplayer only)
-- Each player controls their own character/faction
+- Each player controls their own character
 - Shared camera view ensures all players see the same game state
 
 ### 2.3 Game Modes
-- **Cooperative Mode** - Players work together to build a thriving metropolis
-- **Competitive Mode** - Players compete for resources and territory
-- **Mixed Mode** - Cooperation required for survival, competition for victory points
+- **Cooperative Survival** - Players work together to survive as long as possible
+- **Competitive Survival** - Players compete to be the last survivor or achieve survival goals first
+- **Challenge Mode** - Specific survival scenarios with unique objectives
 
 ## 3. Visual Design
 
@@ -73,52 +73,60 @@ Metropolis is a couch-based local multiplayer game where players collaborate and
 
 ### 4.3 Control Mapping
 - **Movement** - Left stick/WASD
-- **Select/Interact** - A button/Left click
+- **Interact/Gather** - A button/Left click
 - **Cancel** - B button/Right click
 - **Building Menu** - Y button/Tab
-- **Villager Commands** - X button/Space
-- **Resource Panel** - Shoulder buttons/Number keys
+- **Inventory/Crafting** - X button/Space
+- **Status Panel** - Shoulder buttons/Number keys
 
 ## 5. Core Mechanics
 
 ### 5.1 Resource System
-- **Primary Resources**: Wood, Stone, Food, Gold
-- **Advanced Resources**: Iron, Tools, Luxury Goods
-- **Resource Nodes**: Trees, quarries, farms, mines scattered across the map
-- **Inventory Limits**: Players have limited carrying capacity
+- **Primary Resources**: Wood, Stone, Food, Fiber
+- **Advanced Resources**: Metal, Tools, Medicine, Fuel
+- **Resource Nodes**: Trees, quarries, berry bushes, mineral deposits scattered across the map
+- **Inventory Limits**: Players have limited carrying capacity requiring strategic resource management
 
 ### 5.2 Building System
-- **Construction Requirements**: Specific resources needed for each building type
+- **Construction Requirements**: Specific resources and tools needed for each structure
 - **Building Categories**:
-  - **Housing**: Increases population capacity
-  - **Production**: Workshops, farms, mines
-  - **Defense**: Walls, towers, barracks
-  - **Utility**: Storage, roads, decorations
+  - **Shelter**: Tents, cabins, fortified structures for protection
+  - **Workstations**: Crafting benches, forges, cooking areas
+  - **Storage**: Chests, silos, resource stockpiles
+  - **Utilities**: Wells, fire pits, farms, defensive barriers
 
-### 5.3 Villager System
-- **Recruitment**: Spend resources to spawn villagers
-- **Specialization**: Assign villagers to specific roles (builder, farmer, guard)
-- **Automation**: Villagers work independently but can be directed
-- **Happiness**: Villager efficiency depends on housing, food, and safety
+### 5.3 Survival Mechanics
+- **Hunger System**: Players must regularly consume food or face health penalties
+- **Health Management**: Combat, falls, and environmental hazards reduce health
+- **Temperature**: Players must stay warm/cool depending on weather and season
+- **Fatigue**: Extended activity requires rest periods for optimal performance
+- **Tool Durability**: Equipment degrades with use and must be repaired or replaced
 
-### 5.4 Survival Elements
-- **Day/Night Cycle**: Monsters appear at night, reduced visibility
-- **Weather System**: Rain affects farming, snow slows movement
-- **Hunger**: Players and villagers need regular food
-- **Health**: Combat and environmental hazards can damage players
+### 5.4 Environmental Threats
+- **Day/Night Cycle**: Dangerous creatures emerge at night, reduced visibility
+- **Weather System**: Rain, snow, and storms affect player movement and health
+- **Natural Hazards**: Falling rocks, flooding, extreme temperatures
+- **Resource Depletion**: Areas become less productive over time, forcing exploration
 
-## 6. Victory Conditions
+### 5.5 Crafting System
+- **Tool Progression**: Start with basic tools, craft better equipment over time
+- **Recipe Discovery**: Learn new crafting recipes through experimentation and exploration
+- **Quality Levels**: Higher-tier materials create more durable and effective items
+- **Specialization**: Different crafting stations enable unique item categories
 
-### 6.1 Cooperative Victory
-- **Population Milestone**: Reach a target number of happy villagers
-- **Wonder Construction**: Build a massive collaborative structure
-- **Survival Challenge**: Survive for a set number of days/seasons
+## 6. Victory/Success Conditions
 
-### 6.2 Competitive Victory
-- **Economic Victory**: First to accumulate specified wealth/resources
-- **Population Victory**: Largest thriving settlement
-- **Territorial Victory**: Control the most valuable land
-- **Points Victory**: Most points from various achievements after time limit
+### 6.1 Cooperative Success
+- **Survival Duration**: Survive together for a target number of days/seasons
+- **Base Completion**: Build a fully functional and secure survival base
+- **Rescue/Escape**: Reach a rescue point or build an escape vehicle
+- **Resource Milestones**: Collectively gather and stockpile survival essentials
+
+### 6.2 Competitive Success
+- **Last Survivor**: Be the final player remaining alive
+- **Resource Accumulation**: First to gather specified survival resources
+- **Base Quality**: Build the most advanced and secure survival shelter
+- **Challenge Completion**: First to complete specific survival objectives
 
 ## 7. Technical Specifications
 
@@ -139,35 +147,35 @@ Metropolis is a couch-based local multiplayer game where players collaborate and
 
 ### 8.1 Phase 1 - Core Foundation (Weeks 1-4)
 - Basic player movement and camera system
-- Simple resource gathering mechanics
-- Basic building placement system
-- Single player prototype
+- Resource gathering mechanics (wood, stone, food)
+- Basic building placement system (shelters, storage)
+- Single player survival prototype
 
 ### 8.2 Phase 2 - Multiplayer Integration (Weeks 5-8)
 - Local multiplayer input handling
-- UI for multiple players
-- Basic villager spawning and management
-- Resource sharing/competition mechanics
+- UI for multiple players with individual status tracking
+- Survival mechanics (hunger, health, temperature)
+- Resource sharing and competition mechanics
 
 ### 8.3 Phase 3 - Content and Polish (Weeks 9-12)
-- Additional building types and mechanics
-- Survival elements (day/night, weather)
-- Multiple game modes
+- Additional building types and crafting systems
+- Environmental threats (day/night, weather, hazards)
+- Multiple game modes and win conditions
 - Audio and visual polish
 
 ### 8.4 Phase 4 - Testing and Balancing (Weeks 13-16)
 - Playtesting with target audience
-- Balance adjustments
+- Survival balance adjustments
 - Bug fixes and optimization
 - Final polish and release preparation
 
 ## 9. Potential Expansions
 
 ### 9.1 Additional Content
-- **New Biomes**: Desert, arctic, coastal environments
-- **Advanced Technologies**: Research trees, new building types
-- **Seasonal Events**: Special challenges and rewards
-- **Scenario Mode**: Pre-designed challenges and maps
+- **New Biomes**: Desert, arctic, coastal environments with unique survival challenges
+- **Advanced Technologies**: Tool upgrades, complex crafting recipes
+- **Seasonal Events**: Weather disasters, resource bonuses, special challenges
+- **Scenario Mode**: Pre-designed survival challenges and escape scenarios
 
 ### 9.2 Quality of Life
 - **Replay System**: Record and watch previous matches
@@ -178,14 +186,14 @@ Metropolis is a couch-based local multiplayer game where players collaborate and
 ## 10. Risk Assessment
 
 ### 10.1 Technical Risks
-- **Performance**: Multiple AI villagers with 4 players may impact framerate
+- **Performance**: Complex survival calculations with 4 players may impact framerate
 - **Input Handling**: Managing 4 simultaneous controller inputs smoothly
-- **Camera System**: Ensuring all players can see relevant action
+- **Camera System**: Ensuring all players can see relevant survival information
 
 ### 10.2 Design Risks
-- **Complexity Balance**: Keeping mechanics accessible while engaging
-- **Player Conflict**: Balancing cooperation vs competition
-- **Session Length**: Finding optimal match duration for couch play
+- **Complexity Balance**: Keeping survival mechanics accessible while challenging
+- **Player Cooperation**: Balancing individual survival vs team cooperation
+- **Session Length**: Finding optimal match duration for survival gameplay
 
 ### 10.3 Mitigation Strategies
 - Early prototyping of risky technical elements
