@@ -25,9 +25,14 @@ var tent_ghost: Node3D = null
 
 # Character model reference
 @onready var character_model: Node3D = $"character-female-a2"
+@onready var animation_player: AnimationPlayer
 
 func _physics_process(delta):
 	var input_dir = get_input_direction()
+	
+	# Initialize animation player if not done yet
+	if not animation_player:
+		find_animation_player()
 	
 	# Handle movement (always works, even while gathering)
 	handle_movement(input_dir, delta)
@@ -54,14 +59,70 @@ func handle_movement(input_dir: Vector2, delta: float):
 			var target_rotation = atan2(look_direction.x, look_direction.z)
 			character_model.rotation.y = lerp_angle(character_model.rotation.y, target_rotation, 10.0 * delta)
 		
+		# Play walking animation
+		play_animation("walk")
+		
 		# If player moves while gathering, stop gathering (building continues in background)
 		if is_gathering and input_dir.length() > 0.1:
 			stop_gathering()
 	else:
 		# Apply friction when no input
 		velocity = velocity.move_toward(Vector3.ZERO, friction * delta)
+		
+		# Play idle animation when not moving
+		if velocity.length() < 0.1:
+			play_animation("idle")
 	
 	move_and_slide()
+
+func find_animation_player():
+	# Search for AnimationPlayer in the character model hierarchy
+	if character_model:
+		animation_player = find_node_by_type(character_model, null) as AnimationPlayer
+		if animation_player:
+			print("Found AnimationPlayer with animations: ", animation_player.get_animation_list())
+		else:
+			print("No AnimationPlayer found in character model")
+
+func find_node_by_type(node: Node, node_type) -> Node:
+	# Check if this node is an AnimationPlayer
+	if node is AnimationPlayer:
+		return node
+	
+	# Recursively search children
+	for child in node.get_children():
+		var result = find_node_by_type(child, node_type)
+		if result:
+			return result
+	
+	return null
+
+func play_animation(anim_name: String):
+	if not animation_player:
+		return
+	
+	# Try common animation names based on the requested type
+	var animation_names = []
+	match anim_name:
+		"walk":
+			animation_names = ["walk", "walking", "run", "running", "move", "moving"]
+		"idle":
+			animation_names = ["idle", "stand", "standing", "rest"]
+		"gather":
+			animation_names = ["attack_melee_left", "gather", "gathering", "chop", "chopping", "work", "working", "action"]
+	
+	# Try to find and play a matching animation
+	var available_animations = animation_player.get_animation_list()
+	for candidate in animation_names:
+		if candidate in available_animations:
+			if animation_player.current_animation != candidate:
+				animation_player.play(candidate)
+			return
+	
+	# If no specific animation found, try to play anything that might work
+	if available_animations.size() > 0:
+		print("Available animations: ", available_animations)
+		# You can manually map animations here once you know their names
 
 func handle_interaction_input():
 	var action_key = get_action_key()
@@ -226,12 +287,14 @@ func start_gathering_tree():
 	if nearby_tree and nearby_tree.has_method("start_gathering"):
 		if nearby_tree.start_gathering(self):
 			is_gathering = true
+			play_animation("gather")
 			print("Player ", player_id, " started gathering")
 
 func stop_gathering():
 	if is_gathering and nearby_tree:
 		nearby_tree.stop_gathering()
 		is_gathering = false
+		play_animation("idle")
 		print("Player ", player_id, " stopped gathering")
 
 # Tent interaction methods
