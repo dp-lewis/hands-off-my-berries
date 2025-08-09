@@ -1,10 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://dhycgw31gv2xr"]
 
 [ext_resource type="Script" uid="uid://bnvukd1g8cqw8" path="res://scenes/players/player.gd" id="1_plyga"]
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_5iv5l"]
-radius = 0.3
-height = 1.5
+[ext_resource type="PackedScene" uid="uid://cnb87r6ywpk42" path="res://models/kenney-mini-characters/character_female_a.tscn" id="2_ldeu4"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_5iv5l"]
 radius = 0.3
@@ -13,11 +10,8 @@ height = 1.5
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_plyga")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.74998, 0)
-mesh = SubResource("CapsuleMesh_5iv5l")
-skeleton = NodePath("../..")
-
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.67764, 0)
 shape = SubResource("CapsuleShape3D_5iv5l")
+
+[node name="character-female-a2" parent="." instance=ExtResource("2_ldeu4")]

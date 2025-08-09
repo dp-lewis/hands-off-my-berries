@@ -2,6 +2,14 @@
 
 ## 🚨 Immediate Tasks
 
+### Tent Shelter System
+- [ ] **FIX: Tent entry not working** - Players can't figure out how to enter built tents for shelter
+  - [ ] Debug tent shelter area detection
+  - [ ] Verify action key priority system in player.gd
+  - [ ] Test interaction between nearby_shelter and tent areas
+  - [ ] Add clearer visual feedback when tent is enterable
+  - [ ] Consider alternative entry method (automatic vs manual)
+
 ### Input System
 - [ ] Set up Input Map in Project Settings for multiplayer
   - [ ] Add `p2_left`, `p2_right`, `p2_up`, `p2_down` for Player 2 (Gamepad 1)

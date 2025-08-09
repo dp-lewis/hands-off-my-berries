@@ -10,8 +10,13 @@ var wood: int = 0
 var max_inventory: int = 10  # Maximum items player can carry
 var nearby_tree: Node3D = null
 var nearby_tent: Node3D = null
+var nearby_shelter: Node3D = null  # For tent shelter interaction
 var is_gathering: bool = false
 var is_building: bool = false
+
+# Shelter variables
+var is_in_shelter: bool = false
+var current_shelter: Node3D = null
 
 # Building mode variables
 var is_in_build_mode: bool = false
@@ -61,6 +66,8 @@ func handle_interaction_input():
 			start_gathering_tree()
 		elif nearby_tent:
 			start_building_tent()
+		elif nearby_shelter and not is_in_shelter:
+			enter_shelter_manually()
 	elif Input.is_action_just_released(action_key):
 		# Stop gathering if action key is released (building doesn't need to be stopped)
 		if is_gathering:
@@ -240,6 +247,42 @@ func stop_building():
 	# This function is no longer needed since building continues in background
 	# But kept for compatibility
 	pass
+
+# Shelter interaction methods
+func set_nearby_shelter(tent: Node3D):
+	nearby_shelter = tent
+	print("Player ", player_id, " can enter tent shelter")
+
+func clear_nearby_shelter(tent: Node3D):
+	if nearby_shelter == tent:
+		nearby_shelter = null
+		print("Player ", player_id, " can no longer enter tent shelter")
+
+func enter_shelter_manually():
+	if nearby_shelter and nearby_shelter.has_method("shelter_player"):
+		if nearby_shelter.shelter_player(self):
+			is_in_shelter = true
+			current_shelter = nearby_shelter
+			print("Player ", player_id, " entered tent shelter")
+
+func enter_tent_shelter(tent: Node3D):
+	# This method is called by the tent for automatic tracking
+	is_in_shelter = true
+	current_shelter = tent
+	print("Player ", player_id, " is now sheltered in tent")
+	# Add shelter benefits here (weather protection, healing, etc.)
+
+func exit_tent_shelter(tent: Node3D):
+	if current_shelter == tent:
+		is_in_shelter = false
+		current_shelter = null
+		print("Player ", player_id, " left tent shelter")
+
+func is_sheltered() -> bool:
+	return is_in_shelter
+
+func get_current_shelter() -> Node3D:
+	return current_shelter
 
 func add_wood(amount: int):
 	var space_available = max_inventory - wood

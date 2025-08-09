@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://cnb87r6ywpk42"]
+
+[ext_resource type="PackedScene" uid="uid://d3lbeh2bjvw7r" path="res://models/kenney-mini-characters/character-female-a.glb" id="1_l0y3h"]
+
+[node name="character-female-a2" instance=ExtResource("1_l0y3h")]
+
+[node name="character-female-a" parent="." index="0"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
