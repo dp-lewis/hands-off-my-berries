@@ -23,6 +23,9 @@ var is_in_build_mode: bool = false
 var tent_ghost: Node3D = null
 @export var tent_scene: PackedScene = preload("res://models/kenney_nature-kit/tent_detailed_closed.tscn")
 
+# Character model reference
+@onready var character_model: Node3D = $"character-female-a2"
+
 func _physics_process(delta):
 	var input_dir = get_input_direction()
 	
@@ -44,6 +47,12 @@ func handle_movement(input_dir: Vector2, delta: float):
 		# Accelerate towards target velocity
 		var target_velocity = Vector3(input_dir.x * speed, 0, input_dir.y * speed)
 		velocity = velocity.move_toward(target_velocity, acceleration * delta)
+		
+		# Rotate character model to face movement direction
+		if character_model and target_velocity.length() > 0.1:
+			var look_direction = Vector3(input_dir.x, 0, input_dir.y).normalized()
+			var target_rotation = atan2(look_direction.x, look_direction.z)
+			character_model.rotation.y = lerp_angle(character_model.rotation.y, target_rotation, 10.0 * delta)
 		
 		# If player moves while gathering, stop gathering (building continues in background)
 		if is_gathering and input_dir.length() > 0.1:
