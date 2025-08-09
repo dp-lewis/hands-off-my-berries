@@ -40,12 +40,9 @@ func handle_movement(input_dir: Vector2, delta: float):
 		var target_velocity = Vector3(input_dir.x * speed, 0, input_dir.y * speed)
 		velocity = velocity.move_toward(target_velocity, acceleration * delta)
 		
-		# If player moves while gathering or building, stop the action
-		if (is_gathering or is_building) and input_dir.length() > 0.1:
-			if is_gathering:
-				stop_gathering()
-			elif is_building:
-				stop_building()
+		# If player moves while gathering, stop gathering (building continues in background)
+		if is_gathering and input_dir.length() > 0.1:
+			stop_gathering()
 	else:
 		# Apply friction when no input
 		velocity = velocity.move_toward(Vector3.ZERO, friction * delta)
@@ -55,21 +52,19 @@ func handle_movement(input_dir: Vector2, delta: float):
 func handle_interaction_input():
 	var action_key = get_action_key()
 	
-	if Input.is_action_pressed(action_key):
+	if Input.is_action_just_pressed(action_key):  # Changed to just_pressed for single actions
 		# Handle different actions based on mode
 		if is_in_build_mode:
 			# Place tent blueprint
 			place_tent_blueprint()
-		elif nearby_tree and not is_gathering and not is_building:
+		elif nearby_tree and not is_gathering:
 			start_gathering_tree()
-		elif nearby_tent and not is_gathering and not is_building:
+		elif nearby_tent:
 			start_building_tent()
-	else:
-		# Stop gathering/building if action key is released
+	elif Input.is_action_just_released(action_key):
+		# Stop gathering if action key is released (building doesn't need to be stopped)
 		if is_gathering:
 			stop_gathering()
-		elif is_building:
-			stop_building()
 
 func handle_build_mode_input():
 	var build_key = get_build_key()
@@ -79,7 +74,7 @@ func handle_build_mode_input():
 
 func get_build_key() -> String:
 	match player_id:
-		0: return "ui_select"  # Tab for keyboard player
+		0: return "ui_focus_next"  # Tab for keyboard player
 		1: return "p2_build"
 		2: return "p3_build"
 		3: return "p4_build"
@@ -238,14 +233,13 @@ func clear_nearby_tent(tent: Node3D):
 func start_building_tent():
 	if nearby_tent and nearby_tent.has_method("start_building"):
 		if nearby_tent.start_building(self):
-			is_building = true
-			print("Player ", player_id, " started building")
+			print("Player ", player_id, " initiated tent construction")
+			# Note: Building continues in background, no need to set is_building flag
 
 func stop_building():
-	if is_building and nearby_tent:
-		nearby_tent.stop_building()
-		is_building = false
-		print("Player ", player_id, " stopped building")
+	# This function is no longer needed since building continues in background
+	# But kept for compatibility
+	pass
 
 func add_wood(amount: int):
 	var space_available = max_inventory - wood
