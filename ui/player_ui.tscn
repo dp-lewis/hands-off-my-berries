@@ -1,0 +1,78 @@
+[gd_scene load_steps=2 format=3 uid="uid://bp8c4d7h5k2w1"]
+
+[ext_resource type="Script" path="res://ui/player_ui.gd" id="1_1xp1w"]
+
+[node name="PlayerUI" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 200.0
+offset_bottom = 150.0
+script = ExtResource("1_1xp1w")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = -5.0
+offset_bottom = -5.0
+
+[node name="PlayerLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Player 1"
+horizontal_alignment = 1
+
+[node name="HealthContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="HealthEmoji" type="Label" parent="VBoxContainer/HealthContainer"]
+layout_mode = 2
+text = "💚"
+
+[node name="HealthBar" type="ProgressBar" parent="VBoxContainer/HealthContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="HungerContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="HungerEmoji" type="Label" parent="VBoxContainer/HungerContainer"]
+layout_mode = 2
+text = "🍖"
+
+[node name="HungerBar" type="ProgressBar" parent="VBoxContainer/HungerContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="TirednessContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="TirednessEmoji" type="Label" parent="VBoxContainer/TirednessContainer"]
+layout_mode = 2
+text = "😴"
+
+[node name="TirednessBar" type="ProgressBar" parent="VBoxContainer/TirednessContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="InventoryContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="WoodLabel" type="Label" parent="VBoxContainer/InventoryContainer"]
+layout_mode = 2
+text = "🪵 0"
+
+[node name="FoodLabel" type="Label" parent="VBoxContainer/InventoryContainer"]
+layout_mode = 2
+text = "🍖 0"
