@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://bw38olyreb4y7"]
+
+[ext_resource type="PackedScene" uid="uid://c82l7ako6el0f" path="res://models/kenney-survival-kit/resource-wood.glb" id="1_vkyr3"]
+[ext_resource type="Script" uid="uid://d2ld1bfqsbino" path="res://models/kenney-survival-kit/resource_wood.gd" id="2_oybmr"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vkyr3"]
+size = Vector3(0.49501, 0.140869, 0.312134)
+
+[node name="resource-wood2" instance=ExtResource("1_vkyr3")]
+script = ExtResource("2_oybmr")
+
+[node name="resource-wood" parent="." index="0"]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+
+[node name="Area3D" type="Area3D" parent="." index="1"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.000587463, 0.0601807, -0.00167599)
+shape = SubResource("BoxShape3D_vkyr3")

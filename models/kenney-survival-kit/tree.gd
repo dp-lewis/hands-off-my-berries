@@ -2,6 +2,7 @@ extends Node3D
 
 @export var wood_yield: int = 5
 @export var gather_time: float = 2.0
+@export var wood_pile_scene: PackedScene = preload("res://models/kenney-survival-kit/resource_wood.tscn")
 
 var players_in_range: Array[Node] = []
 var current_gatherer: Node = null
@@ -56,12 +57,31 @@ func stop_gathering():
 		print("Stopped gathering tree")
 
 func complete_gathering():
-	if current_gatherer and current_gatherer.has_method("add_wood"):
-		current_gatherer.add_wood(wood_yield)
-		print("Tree gathered! Gave ", wood_yield, " wood")
+	if current_gatherer:
+		print("Tree chopped down!")
+		
+		# Get position and parent before freeing the tree
+		var spawn_position = global_position
+		var tree_parent = get_parent()
+		
+		# Spawn wood pile at tree location
+		spawn_wood_pile(spawn_position, tree_parent)
 		
 		# Remove the tree
 		queue_free()
+
+func spawn_wood_pile(spawn_pos: Vector3, parent_node: Node):
+	if wood_pile_scene:
+		var wood_pile = wood_pile_scene.instantiate()
+		
+		# Set the wood amount
+		wood_pile.wood_amount = wood_yield
+		
+		# Add to the scene tree first
+		parent_node.add_child(wood_pile)
+		
+		# Then set position (now that it's in the tree)
+		wood_pile.global_position = spawn_pos
 
 func get_gather_progress() -> float:
 	return gather_progress

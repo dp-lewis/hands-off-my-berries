@@ -1,7 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://woxo7m8qhipo"]
+[gd_scene load_steps=7 format=3 uid="uid://woxo7m8qhipo"]
 
 [ext_resource type="PackedScene" uid="uid://dhycgw31gv2xr" path="res://scenes/players/player.tscn" id="1_voxel"]
 [ext_resource type="PackedScene" uid="uid://b8b3dbuxtoblb" path="res://models/kenney-survival-kit/tree.tscn" id="2_awkes"]
+[ext_resource type="PackedScene" uid="uid://bw38olyreb4y7" path="res://models/kenney-survival-kit/resource_wood.tscn" id="3_onwf1"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_brxo2"]
 albedo_color = Color(0.0997476, 0.394982, 0.328289, 1)
@@ -69,3 +70,6 @@ transform = Transform3D(0.418406, 0, -0.90826, 0, 1, 0, 0.90826, 0, 0.418406, -3
 
 [node name="tree10" parent="Node3D" instance=ExtResource("2_awkes")]
 transform = Transform3D(0.418406, 0, -0.90826, 0, 1, 0, 0.90826, 0, 0.418406, 30.4431, 0, 13.5546)
+
+[node name="resource-wood2" parent="Node3D" instance=ExtResource("3_onwf1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.20335, 0, 0.484366)
