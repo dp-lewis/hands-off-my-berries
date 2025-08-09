@@ -73,15 +73,20 @@ func stop_gathering():
 		print("Stopped gathering pumpkin")
 
 func complete_gathering():
-	if current_gatherer and current_gatherer.has_method("add_food"):
-		# Try to add food to gatherer's inventory
-		if current_gatherer.add_food(food_amount):
-			print("Pumpkin harvested! Gave ", food_amount, " food")
-			
-			# Remove the pumpkin from the scene
-			queue_free()
+	if current_gatherer:
+		var resource_manager = current_gatherer.get_node("ResourceManager")
+		if resource_manager:
+			# Try to add food to gatherer's inventory using ResourceManager
+			if resource_manager.add_resource("food", food_amount):
+				print("Pumpkin harvested! Gave ", food_amount, " food")
+				
+				# Remove the pumpkin from the scene
+				queue_free()
+			else:
+				print("Gatherer's food inventory is full!")
+				stop_gathering()
 		else:
-			print("Gatherer's food inventory is full!")
+			print("Warning: No ResourceManager found on gatherer!")
 			stop_gathering()
 	else:
 		stop_gathering()

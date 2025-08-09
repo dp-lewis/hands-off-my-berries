@@ -150,20 +150,25 @@ func find_mesh_instances(node: Node) -> Array:
 
 func complete_gathering():
 	if current_gatherer:
-		print("Tree chopped down!")
-		
-		# Get position and parent before freeing the tree
-		var spawn_position = global_position
-		var tree_parent = get_parent()
-		
-		# Clean up progress bar
-		destroy_progress_bar()
-		
-		# Spawn wood pile at tree location
-		spawn_wood_pile(spawn_position, tree_parent)
-		
-		# Remove the tree
-		queue_free()
+		var resource_manager = current_gatherer.get_node("ResourceManager")
+		if resource_manager:
+			# Try to add wood to gatherer's inventory using ResourceManager
+			if resource_manager.add_resource("wood", wood_yield):
+				print("Tree chopped! Gave ", wood_yield, " wood")
+				
+				# Spawn a wood pile at the tree location
+				spawn_wood_pile(global_position, get_parent())
+				
+				# Remove the tree from the scene
+				queue_free()
+			else:
+				print("Gatherer's wood inventory is full!")
+				stop_gathering()
+		else:
+			print("Warning: No ResourceManager found on gatherer!")
+			stop_gathering()
+	else:
+		stop_gathering()
 
 func spawn_wood_pile(spawn_pos: Vector3, parent_node: Node):
 	if wood_pile_scene:
