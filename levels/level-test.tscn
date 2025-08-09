@@ -1,0 +1,35 @@
+[gd_scene load_steps=5 format=3 uid="uid://woxo7m8qhipo"]
+
+[ext_resource type="PackedScene" uid="uid://dhycgw31gv2xr" path="res://scenes/players/player.tscn" id="1_voxel"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_brxo2"]
+albedo_color = Color(0.300468, 0.408319, 0.032033, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_voxel"]
+material = SubResource("StandardMaterial3D_brxo2")
+size = Vector2(100, 100)
+
+[sub_resource type="Environment" id="Environment_brxo2"]
+background_mode = 1
+background_color = Color(0.714771, 0.898021, 1, 1)
+tonemap_mode = 2
+
+[node name="Level-test" type="Node3D"]
+
+[node name="ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_voxel")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_brxo2")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.258819, 0.965926, 0, -0.965926, 0.258819, 0, 50, 10)
+fov = 40.6
+size = 16.714
+
+[node name="Player" parent="." instance=ExtResource("1_voxel")]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -0.159364, 0.98722, 0, -0.98722, -0.159364, 0, 5.82034, 0)
+light_energy = 0.5
+shadow_enabled = true

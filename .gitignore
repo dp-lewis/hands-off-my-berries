@@ -1,0 +1,83 @@
+# Godot 4+ specific ignores
+.godot/
+.import/
+/android/
+export.cfg
+export_presets.cfg
+
+# Imported translations (automatically generated from CSV files)
+*.translation
+
+# Mono-specific ignores (C#)
+.mono/
+data_*/
+mono_crash.*.json
+
+# System/Editor-specific
+.tmp/
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE-specific
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory (if using web export)
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+
+# Builds and exports
+builds/
+exports/
+dist/
+
+# Backup files
+*.tmp
+*.bak
+*.backup
+*~.nib
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Addons that should be ignored (uncomment if using third-party addons)
+# addons/
+# !addons/*/
+# addons/*/bin/
+# addons/*/obj/
+
+# Crashlytics generated file
+crashlytics-build.properties
