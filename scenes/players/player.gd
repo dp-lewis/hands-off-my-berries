@@ -56,6 +56,7 @@ var is_night_time: bool = false
 @export var building_tiredness_cost: float = 3.0  # Tiredness lost when building
 @export var pumpkin_gathering_tiredness_cost: float = 2.0  # Tiredness lost when gathering pumpkin
 @export var tent_recovery_rate: float = 10.0  # Tiredness recovered per minute in tent
+@export var night_tiredness_penalty: float = 2.0  # Additional tiredness lost per minute at night without shelter
 @export var tiredness_health_decrease_rate: float = 3.0  # Health lost per minute when exhausted
 
 func _ready():
@@ -360,6 +361,10 @@ func handle_tiredness_system(delta: float):
 	if input_dir.length() > 0.1:  # Player is moving
 		tiredness -= walking_tiredness_rate * delta
 	
+	# Apply night tiredness penalty if not in shelter
+	if is_night_time and not is_in_shelter:
+		tiredness -= (night_tiredness_penalty / 60.0) * delta
+	
 	# Recover tiredness if in shelter
 	if is_in_shelter:
 		tiredness += (tent_recovery_rate / 60.0) * delta
@@ -371,6 +376,8 @@ func handle_tiredness_system(delta: float):
 	var time_seconds = int(Time.get_ticks_msec() / 1000.0)
 	if time_seconds % 7 == 0 and (Time.get_ticks_msec() % 1000) < 16:
 		var status = " (Resting)" if is_in_shelter else ""
+		if is_night_time and not is_in_shelter:
+			status += " (Night Exhaustion)"
 		print("Player ", player_id, " - Tiredness: ", int(tiredness), "/", int(max_tiredness), status)
 	
 	# If tiredness reaches 0, start losing health
