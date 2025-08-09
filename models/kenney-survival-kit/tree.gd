@@ -87,7 +87,7 @@ func update_chopping_visuals():
 	
 	# Update progress bar
 	if progress_bar:
-		progress_bar.call("set_progress", progress)
+		progress_bar.set_progress(progress)
 	
 	# 1. Scale reduction - tree gets smaller as chopped
 	var scale_factor = 1.0 - (progress * 0.3)  # Reduce by up to 30%
@@ -103,17 +103,19 @@ func update_chopping_visuals():
 	update_tree_color(health_color)
 
 func create_progress_bar():
-	# Create a simple progress bar using built-in nodes
 	if not progress_bar:
-		progress_bar = Node3D.new()
-		progress_bar.name = "ProgressBar"
-		add_child(progress_bar)
-		
-		# Load and add the progress bar script
-		var script = load("res://components/progress_bar_3d.gd")
-		progress_bar.set_script(script)
-		progress_bar.call("set_target", self)
-		progress_bar.call("set_color", Color.YELLOW)  # Yellow for chopping
+		# Load the progress bar scene (same as pumpkin)
+		var progress_bar_scene = load("res://components/progress_bar_3d.tscn")
+		if progress_bar_scene:
+			progress_bar = progress_bar_scene.instantiate()
+			
+			# Position above the tree
+			progress_bar.position = Vector3(0, 3.0, 0)  # Higher than pumpkin since trees are taller
+			add_child(progress_bar)
+			
+			progress_bar.set_progress(0.0)
+		else:
+			print("Warning: Could not load progress bar scene")
 
 func destroy_progress_bar():
 	if progress_bar:
