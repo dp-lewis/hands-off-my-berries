@@ -9,7 +9,14 @@ extends CharacterBody3D
 var wood: int = 0
 var max_inventory: int = 10  # Maximum items player can carry
 var nearby_tree: Node3D = null
+var nearby_tent: Node3D = null
 var is_gathering: bool = false
+var is_building: bool = false
+
+# Building mode variables
+var is_in_build_mode: bool = false
+var tent_ghost: Node3D = null
+@export var tent_scene: PackedScene = preload("res://models/kenney_nature-kit/tent_detailed_closed.tscn")
 
 func _physics_process(delta):
 	var input_dir = get_input_direction()
@@ -17,8 +24,15 @@ func _physics_process(delta):
 	# Handle movement (always works, even while gathering)
 	handle_movement(input_dir, delta)
 	
+	# Handle building mode toggle
+	handle_build_mode_input()
+	
 	# Handle interaction input
 	handle_interaction_input()
+	
+	# Update ghost position if in build mode
+	if is_in_build_mode and tent_ghost:
+		update_ghost_position()
 
 func handle_movement(input_dir: Vector2, delta: float):
 	if input_dir != Vector2.ZERO:
@@ -26,9 +40,12 @@ func handle_movement(input_dir: Vector2, delta: float):
 		var target_velocity = Vector3(input_dir.x * speed, 0, input_dir.y * speed)
 		velocity = velocity.move_toward(target_velocity, acceleration * delta)
 		
-		# If player moves while gathering, stop gathering
-		if is_gathering and input_dir.length() > 0.1:
-			stop_gathering()
+		# If player moves while gathering or building, stop the action
+		if (is_gathering or is_building) and input_dir.length() > 0.1:
+			if is_gathering:
+				stop_gathering()
+			elif is_building:
+				stop_building()
 	else:
 		# Apply friction when no input
 		velocity = velocity.move_toward(Vector3.ZERO, friction * delta)
@@ -39,13 +56,132 @@ func handle_interaction_input():
 	var action_key = get_action_key()
 	
 	if Input.is_action_pressed(action_key):
-		# Try to start or continue gathering
-		if nearby_tree and not is_gathering:
+		# Handle different actions based on mode
+		if is_in_build_mode:
+			# Place tent blueprint
+			place_tent_blueprint()
+		elif nearby_tree and not is_gathering and not is_building:
 			start_gathering_tree()
+		elif nearby_tent and not is_gathering and not is_building:
+			start_building_tent()
 	else:
-		# Stop gathering if action key is released
+		# Stop gathering/building if action key is released
 		if is_gathering:
 			stop_gathering()
+		elif is_building:
+			stop_building()
+
+func handle_build_mode_input():
+	var build_key = get_build_key()
+	
+	if Input.is_action_just_pressed(build_key):
+		toggle_build_mode()
+
+func get_build_key() -> String:
+	match player_id:
+		0: return "ui_select"  # Tab for keyboard player
+		1: return "p2_build"
+		2: return "p3_build"
+		3: return "p4_build"
+	return "ui_select"
+
+func toggle_build_mode():
+	if is_in_build_mode:
+		exit_build_mode()
+	else:
+		enter_build_mode()
+
+func enter_build_mode():
+	# Check if player has enough wood for tent
+	if wood < 8:
+		print("Player ", player_id, " needs 8 wood to build tent (have ", wood, ")")
+		return
+	
+	is_in_build_mode = true
+	create_tent_ghost()
+	print("Player ", player_id, " entered build mode")
+
+func exit_build_mode():
+	is_in_build_mode = false
+	destroy_tent_ghost()
+	print("Player ", player_id, " exited build mode")
+
+func create_tent_ghost():
+	if tent_scene and not tent_ghost:
+		tent_ghost = tent_scene.instantiate()
+		
+		# Make it semi-transparent by modifying materials
+		make_ghost_transparent()
+		
+		# Remove any collision or scripts to make it just visual
+		remove_ghost_functionality()
+		
+		# Add to the scene
+		get_parent().add_child(tent_ghost)
+		update_ghost_position()
+
+func make_ghost_transparent():
+	if tent_ghost:
+		# Find all MeshInstance3D nodes and make them transparent
+		var mesh_instances = find_mesh_instances(tent_ghost)
+		for mesh_instance in mesh_instances:
+			if mesh_instance.get_surface_override_material_count() == 0:
+				# Create a new transparent material
+				var material = StandardMaterial3D.new()
+				material.albedo_color = Color(1, 1, 1, 0.3)  # 30% opacity
+				material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+				mesh_instance.material_override = material
+			else:
+				# Modify existing material
+				var material = mesh_instance.get_surface_override_material(0)
+				if material:
+					material = material.duplicate()
+					material.albedo_color.a = 0.3
+					material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+					mesh_instance.set_surface_override_material(0, material)
+
+func find_mesh_instances(node: Node) -> Array:
+	var mesh_instances = []
+	if node is MeshInstance3D:
+		mesh_instances.append(node)
+	
+	for child in node.get_children():
+		mesh_instances += find_mesh_instances(child)
+	
+	return mesh_instances
+
+func remove_ghost_functionality():
+	if tent_ghost:
+		# Remove any Area3D or StaticBody3D to prevent interactions
+		for child in tent_ghost.get_children():
+			if child is Area3D or child is StaticBody3D:
+				child.queue_free()
+
+func destroy_tent_ghost():
+	if tent_ghost:
+		tent_ghost.queue_free()
+		tent_ghost = null
+
+func update_ghost_position():
+	if tent_ghost:
+		# Position ghost slightly in front of player
+		var forward_offset = Vector3(0, 0, -2)  # 2 units in front
+		tent_ghost.global_position = global_position + forward_offset
+
+func place_tent_blueprint():
+	if tent_ghost and wood >= 8:
+		# Deduct wood cost for placing the blueprint
+		wood -= 8
+		
+		# Create actual tent at ghost position
+		var new_tent = tent_scene.instantiate()
+		get_parent().add_child(new_tent)
+		new_tent.global_position = tent_ghost.global_position
+		
+		print("Player ", player_id, " placed tent blueprint (", wood, " wood remaining)")
+		
+		# Exit build mode
+		exit_build_mode()
 
 func get_input_direction() -> Vector2:
 	match player_id:
@@ -86,6 +222,30 @@ func stop_gathering():
 		nearby_tree.stop_gathering()
 		is_gathering = false
 		print("Player ", player_id, " stopped gathering")
+
+# Tent interaction methods
+func set_nearby_tent(tent: Node3D):
+	nearby_tent = tent
+	print("Player ", player_id, " near tent")
+
+func clear_nearby_tent(tent: Node3D):
+	if nearby_tent == tent:
+		nearby_tent = null
+		if is_building:
+			stop_building()
+		print("Player ", player_id, " left tent area")
+
+func start_building_tent():
+	if nearby_tent and nearby_tent.has_method("start_building"):
+		if nearby_tent.start_building(self):
+			is_building = true
+			print("Player ", player_id, " started building")
+
+func stop_building():
+	if is_building and nearby_tent:
+		nearby_tent.stop_building()
+		is_building = false
+		print("Player ", player_id, " stopped building")
 
 func add_wood(amount: int):
 	var space_available = max_inventory - wood
