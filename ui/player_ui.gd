@@ -116,9 +116,11 @@ func update_ui_values():
 	
 	# Update inventory labels
 	if wood_label:
-		wood_label.text = "🪵 " + str(target_player.wood)
+		var wood_amount = target_player.resource_manager.get_resource_amount("wood") if target_player.resource_manager else 0
+		wood_label.text = "🪵 " + str(wood_amount)
 	if food_label:
-		food_label.text = "🍖 " + str(target_player.food)
+		var food_amount = target_player.resource_manager.get_resource_amount("food") if target_player.resource_manager else 0
+		food_label.text = "🍖 " + str(food_amount)
 	
 	# Color-code bars based on values
 	update_bar_colors()

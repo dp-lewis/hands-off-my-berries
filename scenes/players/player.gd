@@ -5,11 +5,7 @@ extends CharacterBody3D
 @export var friction: float = 15.0
 @export var player_id: int = 0
 
-# Resource and interaction variables
-var wood: int = 0
-var food: int = 0  # New food inventory
-var max_inventory: int = 10  # Maximum items player can carry
-var max_food_inventory: int = 5  # Maximum food items player can carry
+# Resource and interaction variables (resources now managed by ResourceManager)
 var nearby_tree: Node3D = null
 var nearby_tent: Node3D = null
 var nearby_shelter: Node3D = null  # For tent shelter interaction
@@ -33,6 +29,10 @@ var tent_ghost: Node3D = null
 # Simple UI reference
 var player_ui: Control = null
 @export var player_ui_scene: PackedScene = preload("res://ui/player_ui.tscn")
+
+# Resource Management System
+@onready var resource_manager: ResourceManager = $ResourceManager
+var resource_config: ResourceConfig
 
 # Simple survival variables
 var health: float = 100.0
@@ -62,6 +62,9 @@ var is_night_time: bool = false
 func _ready():
 	# Add player to group for day/night system to find
 	add_to_group("players")
+	
+	# Setup resource management system
+	setup_resource_system()
 	
 	# Create simple UI
 	create_player_ui()
@@ -218,8 +221,9 @@ func toggle_build_mode():
 
 func enter_build_mode():
 	# Check if player has enough wood for tent
-	if wood < 8:
-		print("Player ", player_id, " needs 8 wood to build tent (have ", wood, ")")
+	var current_wood = resource_manager.get_resource_amount("wood") if resource_manager else 0
+	if current_wood < 8:
+		print("Player ", player_id, " needs 8 wood to build tent (have ", current_wood, ")")
 		return
 	
 	is_in_build_mode = true
@@ -294,16 +298,19 @@ func update_ghost_position():
 		tent_ghost.global_position = global_position + forward_offset
 
 func place_tent_blueprint():
-	if tent_ghost and wood >= 8:
+	var current_wood = resource_manager.get_resource_amount("wood") if resource_manager else 0
+	if tent_ghost and current_wood >= 8:
 		# Deduct wood cost for placing the blueprint
-		wood -= 8
+		if resource_manager:
+			resource_manager.remove_resource("wood", 8)
 		
 		# Create actual tent at ghost position
 		var new_tent = tent_scene.instantiate()
 		get_parent().add_child(new_tent)
 		new_tent.global_position = tent_ghost.global_position
 		
-		print("Player ", player_id, " placed tent blueprint (", wood, " wood remaining)")
+		var remaining_wood = resource_manager.get_resource_amount("wood") if resource_manager else 0
+		print("Player ", player_id, " placed tent blueprint (", remaining_wood, " wood remaining)")
 		
 		# Exit build mode
 		exit_build_mode()
@@ -333,10 +340,12 @@ func handle_hunger_system(delta: float):
 	# Log hunger status occasionally (every 5 seconds)
 	var time_seconds = int(Time.get_ticks_msec() / 1000.0)
 	if time_seconds % 5 == 0 and (Time.get_ticks_msec() % 1000) < 16:
-		print("Player ", player_id, " - Hunger: ", int(hunger), "/", int(max_hunger), " Food: ", food)
+		var current_food = resource_manager.get_resource_amount("food") if resource_manager else 0
+		print("Player ", player_id, " - Hunger: ", int(hunger), "/", int(max_hunger), " Food: ", current_food)
 	
 	# Auto-eat if hunger is low and we have food
-	if hunger <= auto_eat_threshold and food > 0:
+	var has_food = resource_manager.get_resource_amount("food") > 0 if resource_manager else false
+	if hunger <= auto_eat_threshold and has_food:
 		consume_food()
 	
 	# If hunger reaches 0, start losing health
@@ -346,10 +355,11 @@ func handle_hunger_system(delta: float):
 			print("Player ", player_id, " is starving! Health: ", int(health))
 
 func consume_food():
-	if food > 0:
-		food -= 1
+	if resource_manager and resource_manager.get_resource_amount("food") > 0:
+		resource_manager.remove_resource("food", 1)
 		hunger = min(hunger + pumpkin_hunger_restore, max_hunger)
-		print("Player ", player_id, " auto-ate food! Hunger restored to ", int(hunger), " (", food, " food remaining)")
+		var remaining_food = resource_manager.get_resource_amount("food")
+		print("Player ", player_id, " auto-ate food! Hunger restored to ", int(hunger), " (", remaining_food, " food remaining)")
 
 # Tiredness System
 func handle_tiredness_system(delta: float):
@@ -503,45 +513,41 @@ func is_sheltered() -> bool:
 func get_current_shelter() -> Node3D:
 	return current_shelter
 
-func add_wood(amount: int):
-	var space_available = max_inventory - wood
-	var amount_to_add = min(amount, space_available)
-	
-	if amount_to_add > 0:
-		wood += amount_to_add
-		print("Player ", player_id, " collected ", amount_to_add, " wood (", wood, "/", max_inventory, ")")
-		
-		# Return true if we could collect all the wood
-		return amount_to_add == amount
-	else:
-		print("Player ", player_id, " inventory full! (", wood, "/", max_inventory, ")")
+func add_wood(amount: int) -> bool:
+	if not resource_manager:
+		print("Warning: ResourceManager not available for Player ", player_id)
 		return false
+	
+	var amount_added = resource_manager.add_resource("wood", amount)
+	return amount_added == amount
 
 func get_inventory_space() -> int:
-	return max_inventory - wood
+	if not resource_manager:
+		return 0
+	return resource_manager.get_available_space("wood")
 
 func is_inventory_full() -> bool:
-	return wood >= max_inventory
+	if not resource_manager:
+		return false
+	return resource_manager.is_resource_full("wood")
 
 func add_food(amount: int) -> bool:
-	var space_available = max_food_inventory - food
-	var amount_to_add = min(amount, space_available)
-	
-	if amount_to_add > 0:
-		food += amount_to_add
-		print("Player ", player_id, " collected ", amount_to_add, " food (", food, "/", max_food_inventory, ")")
-		
-		# Return true if we could collect all the food
-		return amount_to_add == amount
-	else:
-		print("Player ", player_id, " food inventory full! (", food, "/", max_food_inventory, ")")
+	if not resource_manager:
+		print("Warning: ResourceManager not available for Player ", player_id)
 		return false
+	
+	var amount_added = resource_manager.add_resource("food", amount)
+	return amount_added == amount
 
 func get_food_inventory_space() -> int:
-	return max_food_inventory - food
+	if not resource_manager:
+		return 0
+	return resource_manager.get_available_space("food")
 
 func is_food_inventory_full() -> bool:
-	return food >= max_food_inventory
+	if not resource_manager:
+		return false
+	return resource_manager.is_resource_full("food")
 
 # Simple day/night survival methods
 func on_day_started():
@@ -582,6 +588,40 @@ func get_tiredness() -> float:
 
 func get_tiredness_percentage() -> float:
 	return tiredness / max_tiredness
+
+# Resource Management System Setup
+func setup_resource_system():
+	if not resource_manager:
+		print("Warning: ResourceManager not found for Player ", player_id)
+		return
+	
+	# Create resource config dynamically
+	var ResourceConfigScript = load("res://config/resource_config.gd")
+	resource_config = ResourceConfigScript.new()
+	
+	# Setup active resource types using config
+	for resource_type in resource_config.get_active_resource_types():
+		var capacity = resource_config.get_max_capacity(resource_type)
+		resource_manager.setup_resource_type(resource_type, capacity, 0)
+	
+	# Connect signals for UI updates and game events
+	resource_manager.resource_changed.connect(_on_resource_changed)
+	resource_manager.resource_full.connect(_on_resource_full)
+	resource_manager.resource_empty.connect(_on_resource_empty)
+	
+	print("ResourceManager initialized for Player ", player_id)
+
+# Resource system signal handlers
+func _on_resource_changed(_resource_type: String, _old_amount: int, _new_amount: int):
+	# This will be used to update UI reactively
+	if player_ui and player_ui.has_method("update_stats"):
+		player_ui.update_stats()
+
+func _on_resource_full(resource_type: String):
+	print("Player ", player_id, " ", resource_type, " inventory is full!")
+
+func _on_resource_empty(resource_type: String):
+	print("Player ", player_id, " ", resource_type, " inventory is empty!")
 
 # Player UI Management
 func create_player_ui():
