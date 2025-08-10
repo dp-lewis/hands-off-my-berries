@@ -2,12 +2,12 @@
 
 ## 🚀 Implementation Checklist
 
-### **Step 1: Foundation** ⭐ *Start Here*
-- [ ] Create `components/player_component.gd` base class
-- [ ] Create `components/player_controller.gd` coordinator  
-- [ ] Create interface definitions in `interfaces/`
-- [ ] Set up component lifecycle management
-- [ ] **Test:** Basic component instantiation and communication
+### **Step 1: Foundation** ⭐ *COMPLETE* ✅
+- [x] Create `components/player_component.gd` base class
+- [x] Create `components/player_controller.gd` coordinator  
+- [x] Create interface definitions in `interfaces/`
+- [x] Set up component lifecycle management
+- [x] **Test:** Basic component instantiation and communication
 
 ### **Step 2: Movement Component** 🚶‍♂️  
 - [ ] Extract movement logic from `player.gd` (~120 lines)
@@ -165,13 +165,33 @@ touch components/player_controller.gd
 
 ### **Run Tests**
 ```bash
+# Individual component tests
 godot --headless --script tests/test_player_movement.gd
+godot --headless --script tests/test_player_survival.gd
+godot --headless --script tests/test_player_builder.gd
+
+# Full test suite
+godot --headless --script tests/test_runner_player_refactor.gd
+
+# Integration tests  
 godot --headless --script tests/test_player_integration.gd
 ```
 
 ### **Performance Check**
 ```bash
 godot --headless --script tests/performance_validation_player.gd
+```
+
+### **Test Development (TDD Approach)**
+```bash
+# 1. Write tests first
+touch tests/test_player_movement.gd
+
+# 2. Implement component to pass tests
+touch components/player_movement.gd
+
+# 3. Run tests frequently during development
+godot --headless --script tests/test_player_movement.gd
 ```
 
 ## 🔍 Common Patterns
@@ -203,9 +223,17 @@ func _on_component_error(message: String):
 
 ## 📊 Progress Tracking
 
-- [ ] **Week 1:** Foundation + Movement (Steps 1-2)
-- [ ] **Week 2:** Survival + Builder (Steps 3-4)  
-- [ ] **Week 3:** Interaction + Input (Steps 5-6)
-- [ ] **Week 4:** Integration + Testing
+### **Development + Testing Timeline**
+- [ ] **Week 1:** Foundation + Movement (Steps 1-2) + 25-30 tests
+- [ ] **Week 2:** Survival + Builder (Steps 3-4) + 40-50 tests  
+- [ ] **Week 3:** Interaction + Input (Steps 5-6) + 30-35 tests
+- [ ] **Week 4:** Integration + Testing + 15-20 tests
 
+### **Testing Goals**
+- [ ] **100+ unit tests** across all components (90%+ coverage)
+- [ ] **20+ integration tests** for component communication
+- [ ] **TDD approach** - write tests before/during component development
+- [ ] **Performance validation** - ensure <5% overhead vs monolithic
+
+**📋 Comprehensive Testing Plan:** See `/docs/player-refactoring-testing-plan.md`  
 **Target Completion:** August 31, 2025
