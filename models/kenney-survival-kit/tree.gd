@@ -10,17 +10,13 @@ var gather_progress: float = 0.0
 var is_being_gathered: bool = false
 
 # Visual state variables
-var original_scale: Vector3
-var original_rotation: Vector3
 var progress_bar: Node3D
 @onready var tree_mesh: Node3D
 
 @onready var area_3d: Area3D = $Area3D
 
 func _ready():
-	# Store original values for visual effects
-	original_scale = scale
-	original_rotation = rotation
+	# Get reference to the visual mesh (first child)
 	tree_mesh = get_child(0)  # Assuming first child is the mesh
 	
 	# Connect area signals for player detection
@@ -92,16 +88,11 @@ func update_chopping_visuals():
 	if progress_bar:
 		progress_bar.set_progress(progress)
 	
-	# 1. Scale reduction - tree gets smaller as chopped
-	var scale_factor = 1.0 - (progress * 0.3)  # Reduce by up to 30%
-	scale = original_scale * scale_factor
+	# 1. Tilting effect - only apply to the visual mesh, not the entire tree
+	var tilt_angle = progress * 0.3  # Max tilt of about 17 degrees
+	tree_mesh.rotation.z = tilt_angle
 	
-	# 2. Tilt - tree starts leaning as it's chopped more
-	var max_tilt = 15.0  # degrees
-	var tilt_amount = progress * max_tilt
-	rotation.z = original_rotation.z + deg_to_rad(tilt_amount)
-	
-	# 3. Color change - green to brown as damaged
+	# 2. Color change - green to brown as damaged
 	var health_color = Color.GREEN.lerp(Color.BROWN, progress)
 	update_tree_color(health_color)
 
@@ -135,8 +126,9 @@ func update_tree_color(color: Color):
 
 func reset_tree_visuals():
 	if tree_mesh:
-		scale = original_scale
-		rotation = original_rotation
+		# Reset only the visual mesh, not the entire tree node
+		tree_mesh.scale = Vector3.ONE
+		tree_mesh.rotation = Vector3.ZERO
 		
 		# Reset to original green color
 		update_tree_color(Color.GREEN)
