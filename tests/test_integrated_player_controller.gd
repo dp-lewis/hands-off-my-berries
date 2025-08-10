@@ -14,6 +14,13 @@ func before_each():
 	# Create player controller (this loads the integrated system)
 	player_controller = PlayerController.new()
 	player_controller.player_id = 0
+	
+	# Create ResourceManager child node (required by PlayerController)
+	var ResourceManagerScript = load("res://components/resource_manager.gd")
+	var resource_manager = ResourceManagerScript.new()
+	resource_manager.name = "ResourceManager"
+	player_controller.add_child(resource_manager)
+	
 	test_scene.add_child(player_controller)
 
 func after_each():
