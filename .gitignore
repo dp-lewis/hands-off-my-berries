@@ -81,3 +81,6 @@ dist/
 
 # Crashlytics generated file
 crashlytics-build.properties
+
+
+build/
