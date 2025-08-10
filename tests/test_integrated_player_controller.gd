@@ -1,7 +1,7 @@
 # Integrated PlayerController Test Suite for GUT
 extends GutTest
 
-const PlayerController = preload("res://scenes/players/player_new.gd")
+const PlayerController = preload("res://scenes/players/player.gd")
 
 var player_controller
 var test_scene

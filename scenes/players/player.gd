@@ -1,5 +1,5 @@
-# Integrated PlayerController
-# Replaces the monolithic player.gd with component-based architecture
+# PlayerController - Component-Based Architecture
+# Modern, maintainable player system with 6 specialized components
 extends CharacterBody3D
 
 @export var player_id: int = 0

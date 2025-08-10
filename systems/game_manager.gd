@@ -39,7 +39,7 @@ func find_players():
 	
 	if all_nodes.is_empty():
 		# Fallback: search for nodes with player script
-		all_nodes = find_nodes_with_script(get_tree().current_scene, "player_new.gd")
+		all_nodes = find_nodes_with_script(get_tree().current_scene, "player.gd")
 	
 	for node in all_nodes:
 		if node.has_method("get_input_direction"):  # Check if it's a player
