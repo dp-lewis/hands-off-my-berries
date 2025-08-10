@@ -362,3 +362,14 @@ func get_priority_interaction() -> String:
 	if interactions.size() > 0:
 		return interactions[0]  # Return highest priority
 	return ""
+
+# Enable/disable interactions (for death system)
+func set_interaction_enabled(enabled: bool) -> void:
+	"""Enable or disable all interactions (called by death system)"""
+	interaction_enabled = enabled
+	
+	# If disabling interactions while gathering, stop gathering
+	if not enabled and is_gathering:
+		stop_gathering()
+	
+	print("PlayerInteraction: Interactions ", "enabled" if enabled else "disabled", " for player ", get_player_id())

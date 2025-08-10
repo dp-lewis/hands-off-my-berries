@@ -408,6 +408,8 @@ func respawn_player():
 		var movement = get_sibling_component("movement")
 		if movement and movement.has_method("set_movement_enabled"):
 			movement.set_movement_enabled(true)
+		if movement and movement.has_method("set_animation_enabled"):
+			movement.set_animation_enabled(true)
 		
 		var interaction = get_sibling_component("interaction")
 		if interaction and interaction.has_method("set_interaction_enabled"):
