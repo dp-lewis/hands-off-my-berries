@@ -28,6 +28,12 @@ func _on_initialize():
 		emit_error("PlayerMovement: Controller is not a CharacterBody3D")
 		return
 	
+	# Sync movement properties from controller
+	if player_controller.has_method("get") or "speed" in player_controller:
+		speed = player_controller.speed
+		acceleration = player_controller.acceleration 
+		friction = player_controller.friction
+	
 	# Find character model and animation player
 	find_character_model()
 	find_animation_player()

@@ -273,17 +273,26 @@ func get_health() -> float:
 func get_health_percentage() -> float:
 	return health / max_health if max_health > 0 else 0.0
 
+func get_max_health() -> float:
+	return max_health
+
 func get_hunger() -> float:
 	return hunger
 
 func get_hunger_percentage() -> float:
 	return hunger / max_hunger if max_hunger > 0 else 0.0
 
+func get_max_hunger() -> float:
+	return max_hunger
+
 func get_tiredness() -> float:
 	return tiredness
 
 func get_tiredness_percentage() -> float:
 	return tiredness / max_tiredness if max_tiredness > 0 else 0.0
+
+func get_max_tiredness() -> float:
+	return max_tiredness
 
 func is_sheltered() -> bool:
 	return is_in_shelter

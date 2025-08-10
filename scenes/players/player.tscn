@@ -1,15 +1,15 @@
 [gd_scene load_steps=5 format=3 uid="uid://dhycgw31gv2xr"]
 
-[ext_resource type="Script" uid="uid://bnvukd1g8cqw8" path="res://scenes/players/player.gd" id="1_plyga"]
+[ext_resource type="Script" uid="uid://ry6nd3ro2fyx" path="res://scenes/players/player_new.gd" id="1_kc87p"]
 [ext_resource type="PackedScene" uid="uid://cnb87r6ywpk42" path="res://models/kenney-mini-characters/character_female_a.tscn" id="2_ldeu4"]
-[ext_resource type="Script" path="res://components/resource_manager.gd" id="3_resource"]
+[ext_resource type="Script" uid="uid://bg7kf7gk56mn0" path="res://components/resource_manager.gd" id="3_resource"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_5iv5l"]
 radius = 0.3
 height = 1.5
 
 [node name="Player" type="CharacterBody3D"]
-script = ExtResource("1_plyga")
+script = ExtResource("1_kc87p")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.67764, 0)

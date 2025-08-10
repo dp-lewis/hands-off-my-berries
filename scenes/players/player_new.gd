@@ -18,6 +18,26 @@ var player_input_handler # : PlayerInputHandler
 @onready var resource_manager: ResourceManager = $ResourceManager
 var resource_config
 
+# Legacy property compatibility (for UI system)
+var hunger: float:
+	get:
+		return get_hunger()
+var health: float:
+	get:
+		return get_health()
+var tiredness: float:
+	get:
+		return get_tiredness()
+var max_hunger: float:
+	get:
+		return get_max_hunger()
+var max_health: float:
+	get:
+		return get_max_health()
+var max_tiredness: float:
+	get:
+		return get_max_tiredness()
+
 # UI System (keeping existing integration)
 var player_ui: Control = null
 @export var player_ui_scene: PackedScene = preload("res://ui/player_ui.tscn")
@@ -110,17 +130,16 @@ func _physics_process(delta):
 		player_survival.process_survival(delta)
 	
 	# Update builder ghost positioning
-	if player_builder and player_builder.is_in_build_mode():
+	if player_builder and player_builder.is_in_building_mode():
 		player_builder.update_ghost_position(global_position)
 	
-	# Move and slide (physics handled by movement component)
-	move_and_slide()
+	# Note: Movement physics is handled by PlayerMovement component
 
 # Input event handlers
 func _on_movement_input(direction: Vector2):
 	"""Handle movement input from input handler"""
 	if player_movement:
-		player_movement.handle_movement_input(direction, get_physics_process_delta_time())
+		player_movement.handle_movement(direction, get_physics_process_delta_time())
 
 func _on_action_pressed():
 	"""Handle action button press"""
@@ -156,6 +175,26 @@ func _on_building_action(action_type: String, cost: float):
 func _on_component_error(message: String):
 	"""Handle component errors"""
 	print("PlayerController Error: ", message)
+
+# Component access methods
+func get_component(component_type: String):
+	"""Get a component by type name"""
+	match component_type.to_lower():
+		"movement", "player_movement", "playermovement":
+			return player_movement
+		"survival", "player_survival", "playersurvival":
+			return player_survival
+		"builder", "player_builder", "playerbuilder":
+			return player_builder
+		"interaction", "player_interaction", "playerinteraction":
+			return player_interaction
+		"input_handler", "player_input_handler", "playerinputhandler":
+			return player_input_handler
+		"resource_manager", "resourcemanager":
+			return resource_manager
+		_:
+			print("PlayerController: Unknown component type: ", component_type)
+			return null
 
 # Legacy compatibility methods (for external game objects)
 # These delegate to the appropriate components
@@ -252,6 +291,16 @@ func get_health_percentage() -> float:
 		return player_survival.get_health_percentage()
 	return 1.0
 
+func get_hunger() -> float:
+	if player_survival:
+		return player_survival.get_hunger()
+	return 100.0
+
+func get_hunger_percentage() -> float:
+	if player_survival:
+		return player_survival.get_hunger_percentage()
+	return 1.0
+
 func get_tiredness() -> float:
 	if player_survival:
 		return player_survival.get_tiredness()
@@ -261,6 +310,21 @@ func get_tiredness_percentage() -> float:
 	if player_survival:
 		return player_survival.get_tiredness_percentage()
 	return 1.0
+
+func get_max_health() -> float:
+	if player_survival:
+		return player_survival.get_max_health()
+	return 100.0
+
+func get_max_hunger() -> float:
+	if player_survival:
+		return player_survival.get_max_hunger()
+	return 100.0
+
+func get_max_tiredness() -> float:
+	if player_survival:
+		return player_survival.get_max_tiredness()
+	return 100.0
 
 func is_sheltered() -> bool:
 	if player_interaction:
