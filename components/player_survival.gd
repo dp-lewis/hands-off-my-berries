@@ -27,10 +27,10 @@ var is_dead: bool = false
 @export var water_thirst_restore: float = 40.0  # How much thirst water restores (when implemented)
 
 @export var base_tiredness_rate: float = 0.2  # Base tiredness lost per second (12 per minute)
-@export var walking_tiredness_rate: float = 0.5  # Tiredness lost per second while moving
-@export var night_tiredness_penalty: float = 0.3  # Additional tiredness lost per second at night without shelter
+@export var walking_tiredness_rate: float = 1.0  # Tiredness lost per second while moving
+@export var night_tiredness_penalty: float = 2.0  # Additional tiredness lost per second at night without shelter
 @export var tent_recovery_rate: float = 3.0  # Tiredness recovered per second in tent
-@export var tiredness_health_decrease_rate: float = 0.8  # Health lost per second when exhausted
+@export var tiredness_health_decrease_rate: float = 3  # Health lost per second when exhausted
 
 # Component references
 var resource_manager = null
@@ -323,6 +323,20 @@ func consume_food() -> bool:
 		hunger_changed.emit(hunger, max_hunger)
 		return true
 	return false
+
+func restore_thirst(amount: float) -> void:
+	"""Restore thirst by the specified amount"""
+	var old_thirst = thirst
+	thirst = min(thirst + amount, max_thirst)
+	var restored_amount = thirst - old_thirst
+	print("Player ", get_player_id(), " drank water! Thirst restored: ", restored_amount, " (", int(thirst), "/", int(max_thirst), ")")
+	
+	# Emit signal if we recovered from dehydration
+	if old_thirst <= 0.0 and thirst > 0.0:
+		stopped_dehydration.emit()
+	
+	# Emit thirst change signal
+	thirst_changed.emit(thirst, max_thirst)
 
 func lose_tiredness(amount: float, activity: String = "") -> void:
 	"""Manually decrease tiredness from activities"""

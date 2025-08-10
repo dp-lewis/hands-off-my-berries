@@ -258,6 +258,20 @@ func exit_tent_shelter(shelter: Node3D):
 	if player_interaction:
 		player_interaction.exit_tent_shelter(shelter)
 
+# Water interaction compatibility
+func set_nearby_water(water: Node3D):
+	if player_interaction:
+		player_interaction.set_nearby_water(water)
+
+func clear_nearby_water(water: Node3D):
+	if player_interaction:
+		player_interaction.clear_nearby_water(water)
+
+func start_drinking_water():
+	if player_interaction:
+		return player_interaction.start_drinking_water()
+	return false
+
 # Resource inventory compatibility (delegated to ResourceManager)
 func add_wood(amount: int) -> bool:
 	if not resource_manager:

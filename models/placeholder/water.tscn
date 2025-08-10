@@ -1,0 +1,35 @@
+[gd_scene load_steps=6 format=3 uid="uid://cjdyrlh8hqxh6"]
+
+[ext_resource type="Script" uid="uid://ccxf0nfr0ltkv" path="res://models/placeholder/water.gd" id="1_xb58h"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_m0yh4"]
+albedo_color = Color(0.00936372, 0.331914, 0.416962, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xb58h"]
+material = SubResource("StandardMaterial3D_m0yh4")
+size = Vector3(5, 0.01, 5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_m0yh4"]
+size = Vector3(4.74048, 1, 4.7301)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_xb58h"]
+size = Vector3(7, 2, 7)
+
+[node name="Water" type="Node3D" node_paths=PackedStringArray("area_3d")]
+script = ExtResource("1_xb58h")
+area_3d = NodePath("Area3D")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_xb58h")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0332123, 0, -0.0382726)
+shape = SubResource("BoxShape3D_m0yh4")
+
+[node name="Area3D" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_xb58h")

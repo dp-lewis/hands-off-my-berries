@@ -1,0 +1,150 @@
+[gd_scene load_steps=3 format=3 uid="uid://bxj8yq7r8m2v4"]
+
+[ext_resource type="Script" uid="uid://8ai1aegsa5k2" path="res://instructions/instructions.gd" id="1_instructions"]
+
+[sub_resource type="Environment" id="Environment_instructions"]
+background_mode = 1
+background_color = Color(0.15, 0.2, 0.3, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.8, 0.9, 1, 1)
+ambient_light_energy = 0.5
+
+[node name="Instructions" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_instructions")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_instructions")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.15, 0.25, 1)
+
+[node name="MainPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Title" type="Label" parent="MainPanel/VBoxContainer"]
+layout_mode = 2
+text = "🏕️ SURVIVAL GAME - HOW TO PLAY"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="MainPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MainPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="InstructionsText" type="RichTextLabel" parent="MainPanel/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "[size=16][b]🎯 OBJECTIVE[/b][/size]
+Survive as long as possible by managing your hunger, thirst, and tiredness!
+
+[size=16][b]⌨️ CONTROLS[/b][/size]
+• [b]WASD[/b] - Move around
+• [b]SPACE[/b] - Interact with objects
+• [b]ESC[/b] - Pause/Menu
+
+[size=16][b]📊 SURVIVAL STATS[/b][/size]
+• [color=red][b]Health[/b][/color] - Don't let this reach zero or you'll die!
+• [color=orange][b]Hunger[/b][/color] - Decreases 0.5/second, eat pumpkins to restore
+• [color=blue][b]Thirst[/b][/color] - Decreases 1.0/second, drink water to restore  
+• [color=purple][b]Tiredness[/b][/color] - Increases from activities, rest in shelter
+
+[size=16][b]🍃 RESOURCES & ACTIVITIES[/b][/size]
+
+[b]🌳 Tree Chopping[/b]
+• Walk near trees and press SPACE to chop
+• Provides wood for building
+• Drains 0.5 tiredness/second while chopping
+• Progress is saved if you stop and restart
+
+[b]🎃 Pumpkin Gathering[/b]
+• Walk near pumpkins and press SPACE to harvest
+• Provides food to restore hunger
+• Small tiredness cost upfront
+
+[b]💧 Water Drinking[/b]
+• Walk near water sources and press SPACE to drink
+• Restores 40 thirst over 2 seconds
+• Drains 0.2 tiredness/second while drinking
+
+[b]🏕️ Tent Building & Shelter[/b]
+• Use wood to build tents for shelter
+• Rest in tents to recover tiredness (1.0/second)
+• Shelter protects from night exhaustion penalty
+• Only one player can occupy a tent at a time
+• Tents light up automatically at night when occupied
+
+[size=16][b]🌙 DAY/NIGHT CYCLE[/b][/size]
+• Day: 60 seconds - normal conditions
+• Night: 30 seconds - extra tiredness penalty if not sheltered
+• Being tired accelerates hunger and thirst consumption
+
+[size=16][b]⚠️ SURVIVAL TIPS[/b][/size]
+• Keep all stats above zero to avoid health damage
+• Multiple critical stats = exponential health damage
+• Plan ahead - gather resources during the day
+• Build shelter before nightfall
+• Being tired makes you consume food/water faster
+
+[size=16][b]🎮 MULTIPLAYER[/b][/size]
+• 2 players can play together
+• Share resources and help each other survive
+• Only one player can use each resource at a time"
+fit_content = true
+scroll_active = false
+
+[node name="HSeparator2" type="HSeparator" parent="MainPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonContainer" type="HBoxContainer" parent="MainPanel/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="StartGameButton" type="Button" parent="MainPanel/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "🚀 START GAME"
+
+[node name="BackButton" type="Button" parent="MainPanel/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "⬅️ BACK"

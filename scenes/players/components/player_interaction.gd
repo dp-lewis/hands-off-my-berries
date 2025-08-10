@@ -15,6 +15,7 @@ var nearby_tree: Node3D = null
 var nearby_tent: Node3D = null
 var nearby_shelter: Node3D = null  # For tent shelter interaction
 var nearby_pumpkin: Node3D = null  # For pumpkin gathering
+var nearby_water: Node3D = null  # For water drinking
 
 # Internal state
 var is_gathering: bool = false
@@ -88,6 +89,7 @@ func _handle_interaction_pressed():
 	print("  - nearby_tent: ", nearby_tent) 
 	print("  - nearby_shelter: ", nearby_shelter)
 	print("  - nearby_pumpkin: ", nearby_pumpkin)
+	print("  - nearby_water: ", nearby_water)
 	print("  - is_in_shelter: ", is_in_shelter)
 	print("  - is_gathering: ", is_gathering)
 		
@@ -96,6 +98,7 @@ func _handle_interaction_pressed():
 	# 2. Shelter entry/exit (built tents take priority over building)
 	# 3. Tent building (only if tent is not built)
 	# 4. Pumpkin gathering (if not already gathering)
+	# 5. Water drinking (if not already gathering)
 	
 	if nearby_tree and not is_gathering:
 		print("DEBUG: Starting tree gathering")
@@ -112,6 +115,9 @@ func _handle_interaction_pressed():
 	elif nearby_pumpkin and not is_gathering:
 		print("DEBUG: Starting pumpkin gathering")
 		start_gathering_pumpkin()
+	elif nearby_water and not is_gathering:
+		print("DEBUG: Starting water drinking")
+		start_drinking_water()
 	else:
 		print("DEBUG: No valid interactions available")
 
@@ -214,6 +220,38 @@ func start_gathering_pumpkin():
 			
 			gathering_started.emit("pumpkin", nearby_pumpkin)
 			print("Player ", player_controller.player_id, " started gathering pumpkin")
+
+# Water interaction methods
+func set_nearby_water(water: Node3D):
+	if nearby_water != water:
+		nearby_water = water
+		nearby_object_changed.emit("water", water, true)
+		interaction_available.emit("drink_water", water)
+		print("Player ", player_controller.player_id, " near water source")
+
+func clear_nearby_water(water: Node3D):
+	if nearby_water == water:
+		nearby_water = null
+		nearby_object_changed.emit("water", water, false)
+		if is_gathering and current_gathering_object == water:
+			stop_gathering()
+		print("Player ", player_controller.player_id, " left water area")
+
+func start_drinking_water():
+	if nearby_water and nearby_water.has_method("start_drinking"):
+		if nearby_water.start_drinking(player_controller):
+			is_gathering = true
+			current_gathering_object = nearby_water
+			gathering_type = "water"
+			
+			# Play drinking animation via movement component
+			if player_movement:
+				player_movement.play_animation("gather")  # Use gather animation for drinking
+			
+			# No upfront tiredness cost - water will apply continuous drain
+			
+			gathering_started.emit("water", nearby_water)
+			print("Player ", player_controller.player_id, " started drinking water")
 
 # Generic gathering stop method
 func stop_gathering():
@@ -363,6 +401,8 @@ func clear_all_nearby_objects():
 		clear_nearby_shelter(nearby_shelter)
 	if nearby_pumpkin:
 		clear_nearby_pumpkin(nearby_pumpkin)
+	if nearby_water:
+		clear_nearby_water(nearby_water)
 
 # Public getters for external access
 func is_gathering_active() -> bool:
@@ -390,6 +430,8 @@ func has_nearby_object(object_type: String) -> bool:
 			return nearby_shelter != null
 		"pumpkin":
 			return nearby_pumpkin != null
+		"water":
+			return nearby_water != null
 		_:
 			return false
 
@@ -403,6 +445,8 @@ func get_nearby_object(object_type: String) -> Node3D:
 			return nearby_shelter
 		"pumpkin":
 			return nearby_pumpkin
+		"water":
+			return nearby_water
 		_:
 			return null
 
@@ -418,6 +462,8 @@ func get_available_interactions() -> Array[String]:
 		interactions.append("enter_shelter")
 	if nearby_pumpkin and not is_gathering:
 		interactions.append("gather_pumpkin")
+	if nearby_water and not is_gathering:
+		interactions.append("drink_water")
 	
 	return interactions
 

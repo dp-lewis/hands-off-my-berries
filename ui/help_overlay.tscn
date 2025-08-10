@@ -1,0 +1,81 @@
+[gd_scene load_steps=2 format=3 uid="uid://dx8y6q7r2m1k8"]
+
+[ext_resource type="Script" path="res://ui/help_overlay.gd" id="1_help_overlay"]
+
+[node name="HelpOverlay" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_help_overlay")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.7)
+
+[node name="HelpPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -250.0
+offset_right = 300.0
+offset_bottom = 250.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HelpPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+
+[node name="Title" type="Label" parent="HelpPanel/VBoxContainer"]
+layout_mode = 2
+text = "🎮 QUICK HELP"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="HelpPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="ControlsLabel" type="RichTextLabel" parent="HelpPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "[b]CONTROLS:[/b]
+• WASD - Move around
+• SPACE - Interact with objects
+• F1/H - Toggle this help
+• ESC - Main menu
+
+[b]SURVIVAL:[/b]
+• Chop trees for wood
+• Harvest pumpkins for food  
+• Drink water to restore thirst
+• Build tents for shelter
+
+[b]STATS:[/b]
+• Keep hunger, thirst, tiredness above 0
+• Rest in tents to recover
+• Avoid being outside at night"
+fit_content = true
+
+[node name="HSeparator2" type="HSeparator" parent="HelpPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="FullInstructionsButton" type="Button" parent="HelpPanel/VBoxContainer"]
+layout_mode = 2
+text = "📖 FULL INSTRUCTIONS"
+
+[node name="CloseButton" type="Button" parent="HelpPanel/VBoxContainer"]
+layout_mode = 2
+text = "❌ CLOSE (F1/H)"
