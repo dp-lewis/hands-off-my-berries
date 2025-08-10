@@ -101,11 +101,23 @@ func _on_movement_started():
 
 # Tree interaction methods
 func set_nearby_tree(tree: Node3D):
-	if nearby_tree != tree:
+	# Check if this tree is closer than the current nearby tree
+	if nearby_tree == null:
 		nearby_tree = tree
 		nearby_object_changed.emit("tree", tree, true)
 		interaction_available.emit("chop_tree", tree)
 		print("Player ", player_controller.player_id, " near tree")
+	else:
+		# Compare distances to find the closest tree
+		var current_distance = player_controller.global_position.distance_to(nearby_tree.global_position)
+		var new_distance = player_controller.global_position.distance_to(tree.global_position)
+		
+		if new_distance < current_distance:
+			# Switch to the closer tree
+			nearby_tree = tree
+			nearby_object_changed.emit("tree", tree, true)
+			interaction_available.emit("chop_tree", tree)
+			print("Player ", player_controller.player_id, " switched to closer tree")
 
 func clear_nearby_tree(tree: Node3D):
 	if nearby_tree == tree:
@@ -114,9 +126,18 @@ func clear_nearby_tree(tree: Node3D):
 		if is_gathering and current_gathering_object == tree:
 			stop_gathering()
 		print("Player ", player_controller.player_id, " left tree area")
+		
+		# Check if there are other trees in range to switch to
+		_find_alternative_nearby_tree()
+
+func _find_alternative_nearby_tree():
+	# This would require the tree system to track which trees the player is in range of
+	# For now, we'll rely on the trees calling set_nearby_tree when entered
+	pass
 
 func start_gathering_tree():
 	if nearby_tree and nearby_tree.has_method("start_gathering"):
+		# Always allow chopping regardless of inventory space
 		if nearby_tree.start_gathering(player_controller):
 			is_gathering = true
 			current_gathering_object = nearby_tree
@@ -131,7 +152,7 @@ func start_gathering_tree():
 				player_survival.lose_tiredness(tree_chopping_tiredness_cost, "chopping tree")
 			
 			gathering_started.emit("tree", nearby_tree)
-			print("Player ", player_controller.player_id, " started gathering tree")
+			print("Player ", player_controller.player_id, " started chopping tree")
 			return true
 	return false
 

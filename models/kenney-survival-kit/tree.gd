@@ -42,11 +42,13 @@ func _process(delta):
 func _on_player_entered(body):
 	if body.has_method("start_gathering_tree"):
 		players_in_range.append(body)
+		# Always notify the player about this tree, let PlayerInteraction decide which is closest
 		body.set_nearby_tree(self)
 
 func _on_player_exited(body):
 	if body in players_in_range:
 		players_in_range.erase(body)
+		# Only clear if this was the active nearby tree
 		body.clear_nearby_tree(self)
 		
 		# If this player was gathering, stop the process
@@ -57,6 +59,7 @@ func start_gathering(player: Node) -> bool:
 	if is_being_gathered:
 		return false  # Already being gathered
 	
+	# No longer check inventory space - allow chopping regardless
 	current_gatherer = player
 	is_being_gathered = true
 	gather_progress = 0.0
@@ -64,7 +67,7 @@ func start_gathering(player: Node) -> bool:
 	# Create progress bar
 	create_progress_bar()
 	
-	print("Started gathering tree...")
+	print("Started chopping tree (wood will be left as collectible)...")
 	return true
 
 func stop_gathering():
@@ -150,23 +153,13 @@ func find_mesh_instances(node: Node) -> Array:
 
 func complete_gathering():
 	if current_gatherer:
-		var resource_manager = current_gatherer.get_node("ResourceManager")
-		if resource_manager:
-			# Try to add wood to gatherer's inventory using ResourceManager
-			if resource_manager.add_resource("wood", wood_yield):
-				print("Tree chopped! Gave ", wood_yield, " wood")
-				
-				# Spawn a wood pile at the tree location
-				spawn_wood_pile(global_position, get_parent())
-				
-				# Remove the tree from the scene
-				queue_free()
-			else:
-				print("Gatherer's wood inventory is full!")
-				stop_gathering()
-		else:
-			print("Warning: No ResourceManager found on gatherer!")
-			stop_gathering()
+		print("Tree chopped down! Wood pile spawned.")
+		
+		# Always spawn a wood pile regardless of inventory space
+		spawn_wood_pile(global_position, get_parent())
+		
+		# Remove the tree from the scene
+		queue_free()
 	else:
 		stop_gathering()
 
