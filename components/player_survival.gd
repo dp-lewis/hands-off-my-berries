@@ -16,6 +16,7 @@ var max_tiredness: float = 100.0
 var is_night_time: bool = false
 var is_in_shelter: bool = false
 var current_shelter: Node3D = null
+var is_dead: bool = false
 
 # Survival configuration (export for easy tweaking)
 @export var hunger_decrease_rate: float = 15.0  # Hunger lost per minute
@@ -92,6 +93,10 @@ func _on_movement_stopped():
 
 func process_survival(delta: float) -> void:
 	"""Main survival processing - call this every frame"""
+	# Don't process survival if player is dead
+	if is_dead:
+		return
+		
 	handle_hunger_system(delta)
 	handle_thirst_system(delta)
 	handle_tiredness_system(delta)
@@ -134,9 +139,11 @@ func handle_hunger_system(delta: float):
 	
 	# If hunger reaches 0, start losing health
 	if hunger <= 0.0:
-		take_damage((health_decrease_rate / 60.0) * delta)
+		var damage_multiplier = calculate_survival_crisis_multiplier()
+		take_damage((health_decrease_rate / 60.0) * damage_multiplier * delta)
 		if health_log_timer <= 0.0:
-			print("Player ", get_player_id(), " is starving! Health: ", int(health))
+			var crisis_text = " (CRISIS!)" if damage_multiplier > 1.5 else ""
+			print("Player ", get_player_id(), " is starving! Health: ", int(health), crisis_text)
 			health_log_timer = 3.0  # Log every 3 seconds when starving
 
 func handle_thirst_system(delta: float):
@@ -170,9 +177,11 @@ func handle_thirst_system(delta: float):
 	
 	# If thirst reaches 0, start losing health (dehydration is dangerous!)
 	if thirst <= 0.0:
-		take_damage((health_decrease_rate / 60.0) * delta)
+		var damage_multiplier = calculate_survival_crisis_multiplier()
+		take_damage((health_decrease_rate / 60.0) * damage_multiplier * delta)
 		if health_log_timer <= 0.0:
-			print("Player ", get_player_id(), " is dehydrated! Health: ", int(health))
+			var crisis_text = " (CRISIS!)" if damage_multiplier > 1.5 else ""
+			print("Player ", get_player_id(), " is dehydrated! Health: ", int(health), crisis_text)
 			health_log_timer = 3.0  # Log every 3 seconds when dehydrated
 
 func handle_tiredness_system(delta: float):
@@ -214,9 +223,11 @@ func handle_tiredness_system(delta: float):
 	
 	# If tiredness reaches 0, start losing health
 	if tiredness <= 0.0:
-		take_damage((tiredness_health_decrease_rate / 60.0) * delta)
+		var damage_multiplier = calculate_survival_crisis_multiplier()
+		take_damage((tiredness_health_decrease_rate / 60.0) * damage_multiplier * delta)
 		if health_log_timer <= 0.0:
-			print("Player ", get_player_id(), " is exhausted! Health: ", int(health))
+			var crisis_text = " (CRISIS!)" if damage_multiplier > 1.5 else ""
+			print("Player ", get_player_id(), " is exhausted! Health: ", int(health), crisis_text)
 			health_log_timer = 4.0  # Log every 4 seconds when exhausted
 
 func update_log_timers(delta: float):
@@ -240,6 +251,68 @@ func calculate_tiredness_acceleration() -> float:
 	
 	return acceleration_multiplier
 
+func calculate_survival_crisis_multiplier() -> float:
+	"""Calculate health damage multiplier when multiple survival stats are critical"""
+	var crisis_count = 0
+	var low_count = 0
+	var base_multiplier = 1.0
+	
+	# Count critical (0%) and low (below 25%) survival stats
+	if hunger <= 0.0:
+		crisis_count += 1
+	elif hunger < 25.0:
+		low_count += 1
+		
+	if thirst <= 0.0:
+		crisis_count += 1
+	elif thirst < 25.0:
+		low_count += 1
+		
+	if tiredness <= 0.0:
+		crisis_count += 1
+	elif tiredness < 25.0:
+		low_count += 1
+	
+	# Apply exponential scaling for multiple crises
+	match crisis_count:
+		0:
+			# No critical stats, but check for low stats
+			match low_count:
+				1:
+					base_multiplier = 1.2  # 1.2x damage for one low stat
+				2:
+					base_multiplier = 1.5  # 1.5x damage for two low stats
+				3:
+					base_multiplier = 1.8  # 1.8x damage for all three low stats
+				_:
+					base_multiplier = 1.0
+		1:
+			# One critical stat
+			match low_count:
+				0:
+					base_multiplier = 1.0  # Normal damage for single crisis
+				1:
+					base_multiplier = 1.5  # 1.5x damage (1 critical + 1 low)
+				2:
+					base_multiplier = 2.0  # 2x damage (1 critical + 2 low)
+				_:
+					base_multiplier = 1.0
+		2:
+			# Two critical stats
+			match low_count:
+				0:
+					base_multiplier = 2.5  # 2.5x damage for double crisis
+				1:
+					base_multiplier = 3.5  # 3.5x damage (2 critical + 1 low)
+				_:
+					base_multiplier = 2.5
+		3:
+			base_multiplier = 5.0  # 5x damage for triple crisis (very dangerous!)
+		_:
+			base_multiplier = 1.0
+	
+	return base_multiplier
+
 func consume_food() -> bool:
 	"""Consume food to restore hunger"""
 	if resource_manager and resource_manager.get_resource_amount("food") > 0:
@@ -253,9 +326,20 @@ func consume_food() -> bool:
 
 func lose_tiredness(amount: float, activity: String = "") -> void:
 	"""Manually decrease tiredness from activities"""
+	var original_tiredness = tiredness
 	tiredness = max(tiredness - amount, 0.0)
-	if activity != "":
+	
+	# If tiredness was already at zero, deduct overflow from health
+	if original_tiredness <= 0.0 and amount > 0.0:
+		var health_damage = amount * 2.0  # 2x conversion rate (tiredness -> health damage)
+		take_damage(health_damage)
+		if activity != "":
+			print("Player ", get_player_id(), " is exhausted! Activity '", activity, "' caused ", int(health_damage), " health damage")
+		else:
+			print("Player ", get_player_id(), " is exhausted! Lost ", int(health_damage), " health from overexertion")
+	elif activity != "":
 		print("Player ", get_player_id(), " is tired from ", activity, " (Tiredness: ", int(tiredness), ")")
+	
 	tiredness_changed.emit(tiredness, max_tiredness)
 
 func take_damage(amount: float):
@@ -272,9 +356,36 @@ func take_damage(amount: float):
 	if health <= 0.0:
 		print("Player ", get_player_id(), " has died!")
 		player_died.emit()
-		respawn_player()
+		trigger_death_sequence()
 	elif health < 25.0:
 		print("Player ", get_player_id(), " is in critical condition! (", int(health), "/", int(max_health), " health)")
+
+func trigger_death_sequence():
+	"""Handle player death - trigger animation and disable player"""
+	# Mark player as dead to stop survival processing
+	is_dead = true
+	
+	# Stop all survival processing by disabling movement and interactions
+	if player_controller:
+		# Disable movement
+		var movement = get_sibling_component("movement")
+		if movement and movement.has_method("set_movement_enabled"):
+			movement.set_movement_enabled(false)
+		
+		# Disable interactions
+		var interaction = get_sibling_component("interaction")
+		if interaction and interaction.has_method("set_interaction_enabled"):
+			interaction.set_interaction_enabled(false)
+		
+		# Trigger death animation through movement component
+		if movement and movement.has_method("play_death_animation"):
+			movement.play_death_animation()
+		else:
+			# Fallback: signal for death animation if method doesn't exist
+			death_animation_requested.emit()
+	
+	# Stop processing survival systems (player is dead)
+	print("Player ", get_player_id(), " death sequence initiated - no respawn")
 
 func heal(amount: float):
 	"""Heal the player"""
@@ -282,17 +393,30 @@ func heal(amount: float):
 	health_changed.emit(health, max_health)
 
 func respawn_player():
-	"""Respawn the player with full health"""
+	"""Respawn the player with full health - call manually to revive"""
+	# Reset death state
+	is_dead = false
+	
+	# Restore all stats
 	health = max_health
 	hunger = max_hunger
 	thirst = max_thirst
 	tiredness = max_tiredness
 	
-	# Reset player position through controller
+	# Re-enable movement and interactions
 	if player_controller:
+		var movement = get_sibling_component("movement")
+		if movement and movement.has_method("set_movement_enabled"):
+			movement.set_movement_enabled(true)
+		
+		var interaction = get_sibling_component("interaction")
+		if interaction and interaction.has_method("set_interaction_enabled"):
+			interaction.set_interaction_enabled(true)
+		
+		# Reset player position
 		player_controller.global_position = Vector3.ZERO
 	
-	print("Player ", get_player_id(), " has respawned")
+	print("Player ", get_player_id(), " has been manually respawned")
 	health_changed.emit(health, max_health)
 	hunger_changed.emit(hunger, max_hunger)
 	thirst_changed.emit(thirst, max_thirst)
@@ -397,12 +521,16 @@ func is_exhausted() -> bool:
 func is_critical_health() -> bool:
 	return health < 25.0
 
+func is_player_dead() -> bool:
+	return is_dead
+
 # Signals for UI and other components
 signal health_changed(new_health: float, max_health: float)
 signal hunger_changed(new_hunger: float, max_hunger: float)
 signal thirst_changed(new_thirst: float, max_thirst: float)
 signal tiredness_changed(new_tiredness: float, max_tiredness: float)
 signal player_died
+signal death_animation_requested
 signal shelter_entered(shelter: Node3D)
 signal shelter_exited(shelter: Node3D)
 
