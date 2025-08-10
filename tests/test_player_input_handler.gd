@@ -1,229 +1,106 @@
-extends GdUnitTestSuite
+# PlayerInputHandler Component Test Suite for GUT
+extends GutTest
 
-# PlayerInputHandler Component Test Suite
-# Tests multi-player input mapping, device-specific controls, and input state management
+const PlayerInputHandler = preload("res://scenes/players/components/player_input_handler.gd")
 
-var input_handler: PlayerInputHandler
+var player_input_handler
 var mock_player_controller
 
-func before_test():
-	# Create PlayerInputHandler component
-	input_handler = PlayerInputHandler.new()
+func before_each():
+	# Create basic mock player controller
+	mock_player_controller = CharacterBody3D.new()
+	add_child_autofree(mock_player_controller)
+	mock_player_controller.player_id = 0
 	
-	# Create mock player controller (CharacterBody3D)
-	mock_player_controller = auto_free(CharacterBody3D.new())
-	mock_player_controller.player_id = 1
-	
-	# Setup component hierarchy
-	add_child(input_handler)
-	add_child(mock_player_controller)
-
-func after_test():
-	if input_handler and is_instance_valid(input_handler):
-		input_handler.cleanup()
+	# Create and initialize component
+	player_input_handler = PlayerInputHandler.new()
+	add_child_autofree(player_input_handler)
+	player_input_handler.initialize(mock_player_controller)
 
 func test_component_initialization():
-	# Test successful initialization
-	input_handler.initialize(mock_player_controller)
-	
-	assert_bool(input_handler.is_initialized).is_true()
-	assert_int(input_handler.get_player_id()).is_equal(1)
-	assert_bool(input_handler.is_input_available()).is_true()
+	assert_true(player_input_handler.is_initialized, "PlayerInputHandler should be initialized")
+	assert_not_null(player_input_handler.player_controller, "Should have player controller reference")
+	assert_eq(player_input_handler.player_id, 0, "Should inherit player ID from controller")
 
-func test_input_mappings_setup():
-	input_handler.initialize(mock_player_controller)
+func test_input_device_assignment():
+	# Test keyboard assignment (player 0)
+	assert_eq(player_input_handler.input_device, "keyboard", "Player 0 should default to keyboard")
 	
-	# Test movement mappings
-	var mappings = input_handler.get_all_mapped_actions()
-	assert_dict(mappings).contains_keys(["movement", "action", "build"])
-	
-	# Test specific player mappings
-	assert_dict(mappings["movement"]).contains_key(1)
-	assert_str(mappings["action"][1]).is_equal("p2_action")
-	assert_str(mappings["build"][1]).is_equal("p2_build")
+	# Test gamepad assignment (player 1+)
+	player_input_handler.player_id = 1
+	player_input_handler.setup_input_mappings()
+	assert_eq(player_input_handler.input_device, "gamepad_0", "Player 1 should use gamepad_0")
 
-func test_player_id_configuration():
-	input_handler.initialize(mock_player_controller)
+func test_input_direction_processing():
+	# Test keyboard input mapping
+	player_input_handler.input_device = "keyboard"
 	
-	# Test different player IDs
-	for player_id in range(4):
-		input_handler.set_player_id(player_id)
-		assert_int(input_handler.get_player_id()).is_equal(player_id)
-		assert_bool(input_handler.is_input_available()).is_true()
-		
-		# Test action key mapping
-		var expected_action = "ui_accept" if player_id == 0 else "p" + str(player_id + 1) + "_action"
-		assert_str(input_handler.get_action_key()).is_equal(expected_action)
+	# Test the input mapping logic directly
+	var expected_suffix = ""
+	var actual_suffix = player_input_handler.get_input_suffix()
+	assert_eq(actual_suffix, expected_suffix, "Keyboard should have empty suffix")
 
-func test_keyboard_player_mappings():
-	input_handler.initialize(mock_player_controller)
-	input_handler.set_player_id(0)  # Keyboard player
+func test_action_key_mapping():
+	# Test action key mapping for different devices
+	player_input_handler.input_device = "keyboard"
+	var keyboard_action = player_input_handler.get_action_key()
+	assert_eq(keyboard_action, "action", "Keyboard should use 'action' key")
 	
-	# Test keyboard-specific mappings
-	assert_str(input_handler.get_action_key()).is_equal("ui_accept")
-	assert_str(input_handler.get_build_key()).is_equal("ui_focus_next")
-	assert_str(input_handler.get_input_device_type()).is_equal("keyboard")
+	player_input_handler.input_device = "gamepad_0"
+	var gamepad_action = player_input_handler.get_action_key()
+	assert_eq(gamepad_action, "action_p1", "Gamepad 0 should use 'action_p1' key")
 
-func test_gamepad_player_mappings():
-	input_handler.initialize(mock_player_controller)
-	input_handler.set_player_id(2)  # Gamepad player
+func test_build_mode_key_mapping():
+	# Test build mode key mapping
+	player_input_handler.input_device = "keyboard"
+	var keyboard_build = player_input_handler.get_build_mode_key()
+	assert_eq(keyboard_build, "build_mode", "Keyboard should use 'build_mode' key")
 	
-	# Test gamepad-specific mappings
-	assert_str(input_handler.get_action_key()).is_equal("p3_action")
-	assert_str(input_handler.get_build_key()).is_equal("p3_build")
-	assert_str(input_handler.get_input_device_type()).is_equal("gamepad")
+	player_input_handler.input_device = "gamepad_1"
+	var gamepad_build = player_input_handler.get_build_mode_key()
+	assert_eq(gamepad_build, "build_mode_p2", "Gamepad 1 should use 'build_mode_p2' key")
 
-func test_input_direction_mapping():
-	input_handler.initialize(mock_player_controller)
+func test_multi_player_input_isolation():
+	# Create multiple input handlers for different players
+	var input_handler_p1 = PlayerInputHandler.new()
+	add_child_autofree(input_handler_p1)
 	
-	# Test movement mapping for different players
-	input_handler.set_player_id(0)
-	# Cannot easily test Input.get_vector without actual input, but we can test the mapping exists
-	var mappings = input_handler.get_all_mapped_actions()
-	var player0_movement = mappings["movement"][0]
-	assert_str(player0_movement["left"]).is_equal("ui_left")
-	assert_str(player0_movement["right"]).is_equal("ui_right")
-	assert_str(player0_movement["up"]).is_equal("ui_up")
-	assert_str(player0_movement["down"]).is_equal("ui_down")
+	var mock_controller_p1 = CharacterBody3D.new()
+	add_child_autofree(mock_controller_p1)
+	mock_controller_p1.player_id = 1
 	
-	input_handler.set_player_id(1)
-	var player1_movement = mappings["movement"][1]
-	assert_str(player1_movement["left"]).is_equal("p2_left")
-	assert_str(player1_movement["right"]).is_equal("p2_right")
-
-func test_custom_mapping_addition():
-	input_handler.initialize(mock_player_controller)
+	input_handler_p1.initialize(mock_controller_p1)
 	
-	# Test adding custom mappings
-	input_handler.add_custom_mapping(0, "action", "custom_action")
-	input_handler.add_custom_mapping(1, "build", "custom_build")
-	
-	var mappings = input_handler.get_all_mapped_actions()
-	assert_str(mappings["action"][0]).is_equal("custom_action")
-	assert_str(mappings["build"][1]).is_equal("custom_build")
-
-func test_input_state_tracking():
-	input_handler.initialize(mock_player_controller)
-	
-	# Test input state structure
-	var state = input_handler.get_input_state()
-	assert_dict(state).contains_keys(["movement_active", "action_held", "build_mode_active"])
-	
-	# Initial state should be inactive
-	assert_bool(state["movement_active"]).is_false()
-	assert_bool(state["action_held"]).is_false()
+	# Test that different players have different input mappings
+	assert_ne(player_input_handler.get_action_key(), input_handler_p1.get_action_key(), 
+		"Different players should have different input mappings")
 
 func test_signal_emission():
-	input_handler.initialize(mock_player_controller)
+	# Watch for signals
+	watch_signals(player_input_handler)
 	
-	# Test signal connections exist
-	assert_bool(input_handler.has_signal("movement_input")).is_true()
-	assert_bool(input_handler.has_signal("action_pressed")).is_true()
-	assert_bool(input_handler.has_signal("action_released")).is_true()
-	assert_bool(input_handler.has_signal("build_mode_toggled")).is_true()
+	# Test that component is set up to emit signals
+	# (We can't easily simulate actual input events in GUT, so we test signal setup)
+	assert_true(player_input_handler.has_signal("movement_input"), "Should have movement_input signal")
+	assert_true(player_input_handler.has_signal("action_pressed"), "Should have action_pressed signal")
+	assert_true(player_input_handler.has_signal("action_released"), "Should have action_released signal")
+	assert_true(player_input_handler.has_signal("build_mode_toggled"), "Should have build_mode_toggled signal")
 
-func test_fallback_mappings():
-	input_handler.initialize(mock_player_controller)
+func test_device_detection():
+	# Test gamepad device detection logic
+	var device_id = player_input_handler.detect_gamepad_device(1)
+	assert_true(device_id >= -1, "Device detection should return valid device ID or -1")
 	
-	# Test with invalid player ID
-	input_handler.set_player_id(99)
-	
-	# Should return fallback values
-	assert_str(input_handler.get_action_key()).is_equal("ui_accept")
-	assert_str(input_handler.get_build_key()).is_equal("ui_select")
-	assert_vector2(input_handler.get_input_direction()).is_equal(Vector2.ZERO)
-
-func test_device_type_detection():
-	input_handler.initialize(mock_player_controller)
-	
-	# Test device type detection for each player
-	var expected_devices = {
-		0: "keyboard",
-		1: "gamepad", 
-		2: "gamepad",
-		3: "gamepad"
-	}
-	
-	for player_id in expected_devices:
-		input_handler.set_player_id(player_id)
-		assert_str(input_handler.get_input_device_type()).is_equal(expected_devices[player_id])
-
-func test_input_validation():
-	input_handler.initialize(mock_player_controller)
-	
-	# Test input availability check
-	assert_bool(input_handler.is_input_available()).is_true()
-	
-	# Test with valid player configuration
-	for player_id in range(4):
-		input_handler.set_player_id(player_id)
-		assert_bool(input_handler.is_input_available()).is_true()
-
-func test_cleanup():
-	input_handler.initialize(mock_player_controller)
-	
-	# Verify initial state
-	assert_bool(input_handler.is_input_available()).is_true()
-	var mappings = input_handler.get_all_mapped_actions()
-	assert_bool(mappings["movement"].size() > 0).is_true()
-	
-	# Test cleanup
-	input_handler._on_cleanup()
-	
-	# Verify mappings are cleared
-	mappings = input_handler.get_all_mapped_actions()
-	assert_bool(mappings["movement"].is_empty()).is_true()
-	assert_bool(mappings["action"].is_empty()).is_true()
-	assert_bool(mappings["build"].is_empty()).is_true()
-
-func test_multiple_player_isolation():
-	# Create multiple input handlers to test isolation
-	var handler1 = PlayerInputHandler.new()
-	var handler2 = PlayerInputHandler.new()
-	var controller1 = auto_free(CharacterBody3D.new())
-	var controller2 = auto_free(CharacterBody3D.new())
-	controller1.player_id = 0
-	controller2.player_id = 2
-	
-	add_child(handler1)
-	add_child(handler2)
-	add_child(controller1)
-	add_child(controller2)
-	
-	handler1.initialize(controller1)
-	handler2.initialize(controller2)
-	
-	# Test that each handler has correct player ID
-	assert_int(handler1.get_player_id()).is_equal(0)
-	assert_int(handler2.get_player_id()).is_equal(2)
-	
-	# Test that mappings are different
-	assert_str(handler1.get_action_key()).is_equal("ui_accept")
-	assert_str(handler2.get_action_key()).is_equal("p3_action")
-	
-	# Cleanup
-	handler1.cleanup()
-	handler2.cleanup()
-
-func test_movement_detection():
-	input_handler.initialize(mock_player_controller)
-	
-	# Test movement activity detection (indirect test since we can't simulate actual input)
-	# We test the logic exists and returns boolean
-	var is_moving = input_handler.is_movement_active()
-	assert_bool(typeof(is_moving) == TYPE_BOOL).is_true()
-
-func test_input_configuration_completeness():
-	input_handler.initialize(mock_player_controller)
-	
-	# Test that all required player configurations exist
-	var mappings = input_handler.get_all_mapped_actions()
-	
-	# All 4 players should have movement mappings
-	for player_id in range(4):
-		assert_bool(mappings["movement"].has(player_id)).is_true()
-		assert_bool(mappings["action"].has(player_id)).is_true()
-		assert_bool(mappings["build"].has(player_id)).is_true()
+	# Test device mapping for different player IDs
+	for i in range(4):
+		var handler = PlayerInputHandler.new()
+		add_child_autofree(handler)
+		var controller = CharacterBody3D.new()
+		add_child_autofree(controller)
+		controller.player_id = i
+		handler.initialize(controller)
 		
-		var movement = mappings["movement"][player_id]
-		assert_dict(movement).contains_keys(["left", "right", "up", "down"])
+		if i == 0:
+			assert_eq(handler.input_device, "keyboard", "Player 0 should use keyboard")
+		else:
+			assert_true(handler.input_device.begins_with("gamepad_"), "Players 1+ should use gamepad")

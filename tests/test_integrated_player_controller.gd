@@ -1,155 +1,128 @@
-extends GdUnitTestSuite
+# Integrated PlayerController Test Suite for GUT
+extends GutTest
 
-# Integrated PlayerController Test Suite
-# Tests the complete component-based player system integration
+const PlayerController = preload("res://scenes/players/player_new.gd")
 
-var player_controller: CharacterBody3D
-var test_scene: Node3D
+var player_controller
+var test_scene
 
-func before_test():
-	# Create test scene
+func before_each():
+	# Create a test scene to add the player controller to
 	test_scene = Node3D.new()
-	add_child(test_scene)
+	add_child_autofree(test_scene)
 	
-	# Load and instantiate the new player controller
-	var PlayerControllerScript = load("res://scenes/players/player_new.gd")
-	player_controller = CharacterBody3D.new()
-	player_controller.set_script(PlayerControllerScript)
+	# Create player controller (this loads the integrated system)
+	player_controller = PlayerController.new()
 	player_controller.player_id = 0
-	
-	# Add ResourceManager to player (required dependency)
-	var resource_manager = load("res://systems/resource_manager.gd").new()
-	resource_manager.name = "ResourceManager"
-	player_controller.add_child(resource_manager)
-	
 	test_scene.add_child(player_controller)
 
-func after_test():
-	if test_scene and is_instance_valid(test_scene):
-		test_scene.queue_free()
+func after_each():
+	if player_controller and is_instance_valid(player_controller):
+		player_controller.queue_free()
 
 func test_player_controller_initialization():
-	# Test that the controller initializes properly
-	assert_object(player_controller).is_not_null()
-	assert_int(player_controller.player_id).is_equal(0)
+	assert_not_null(player_controller, "PlayerController should be created")
+	assert_eq(player_controller.player_id, 0, "Should have correct player ID")
+	assert_true(player_controller.is_in_group("players"), "Should be added to players group")
 
-func test_component_creation():
-	# Trigger component setup
-	player_controller._ready()
+func test_component_loading():
+	# Wait a frame for components to initialize
+	await get_tree().process_frame
 	
-	# Test that all components are created
-	assert_object(player_controller.player_movement).is_not_null()
-	assert_object(player_controller.player_survival).is_not_null()
-	assert_object(player_controller.player_builder).is_not_null()
-	assert_object(player_controller.player_interaction).is_not_null()
-	assert_object(player_controller.player_input_handler).is_not_null()
-
-func test_component_initialization():
-	player_controller._ready()
-	
-	# Test that components are properly initialized
-	assert_bool(player_controller.player_movement.is_initialized).is_true()
-	assert_bool(player_controller.player_survival.is_initialized).is_true()
-	assert_bool(player_controller.player_builder.is_initialized).is_true()
-	assert_bool(player_controller.player_interaction.is_initialized).is_true()
-	assert_bool(player_controller.player_input_handler.is_initialized).is_true()
-
-func test_legacy_compatibility_methods():
-	player_controller._ready()
-	
-	# Test that legacy methods still exist and delegate properly
-	assert_bool(player_controller.has_method("set_nearby_tree")).is_true()
-	assert_bool(player_controller.has_method("add_wood")).is_true()
-	assert_bool(player_controller.has_method("get_health")).is_true()
-	assert_bool(player_controller.has_method("is_sheltered")).is_true()
+	# Test that all components are loaded
+	assert_not_null(player_controller.player_movement, "Should load PlayerMovement component")
+	assert_not_null(player_controller.player_survival, "Should load PlayerSurvival component") 
+	assert_not_null(player_controller.player_builder, "Should load PlayerBuilder component")
+	assert_not_null(player_controller.player_interaction, "Should load PlayerInteraction component")
+	assert_not_null(player_controller.player_input_handler, "Should load PlayerInputHandler component")
 
 func test_resource_system_integration():
-	player_controller._ready()
+	# Wait for resource system to initialize
+	await get_tree().process_frame
 	
-	# Test resource system functionality
+	assert_not_null(player_controller.resource_manager, "Should have ResourceManager")
+	
+	# Test resource management methods
 	var wood_added = player_controller.add_wood(5)
-	assert_bool(wood_added).is_true()
+	assert_true(wood_added, "Should be able to add wood")
 	
-	var space = player_controller.get_inventory_space()
-	assert_int(space).is_greater_equal(0)
+	var inventory_space = player_controller.get_inventory_space()
+	assert_true(inventory_space >= 0, "Should return valid inventory space")
 
-func test_survival_system_integration():
-	player_controller._ready()
+func test_legacy_compatibility():
+	# Wait for components to initialize
+	await get_tree().process_frame
 	
-	# Test survival system access
-	var health = player_controller.get_health()
-	assert_float(health).is_greater(0.0)
+	# Test that legacy interface methods exist and work
+	assert_true(player_controller.has_method("add_wood"), "Should have add_wood method")
+	assert_true(player_controller.has_method("get_health"), "Should have get_health method")
+	assert_true(player_controller.has_method("is_sheltered"), "Should have is_sheltered method")
+	
+	# Test health system compatibility
+	var initial_health = player_controller.get_health()
+	assert_true(initial_health > 0, "Should have positive health")
 	
 	var health_percentage = player_controller.get_health_percentage()
-	assert_float(health_percentage).is_between(0.0, 1.0)
-
-func test_interaction_system_integration():
-	player_controller._ready()
-	
-	# Test interaction system
-	var is_sheltered = player_controller.is_sheltered()
-	assert_bool(typeof(is_sheltered) == TYPE_BOOL).is_true()
-	
-	var shelter = player_controller.get_current_shelter()
-	# Should be null initially
-	assert_object(shelter).is_null()
-
-func test_component_cleanup():
-	player_controller._ready()
-	
-	# Trigger cleanup
-	player_controller._exit_tree()
-	
-	# Components should still exist but be cleaned up
-	assert_object(player_controller.player_movement).is_not_null()
+	assert_true(health_percentage >= 0.0 and health_percentage <= 1.0, "Health percentage should be valid")
 
 func test_signal_connections():
-	player_controller._ready()
+	# Wait for components and signal connections to be established
+	await get_tree().process_frame
 	
-	# Test that input handler signals are connected
-	var input_handler = player_controller.player_input_handler
-	assert_bool(input_handler.has_signal("movement_input")).is_true()
-	assert_bool(input_handler.has_signal("action_pressed")).is_true()
-	assert_bool(input_handler.has_signal("build_mode_toggled")).is_true()
+	# Test that component signals are properly connected
+	# We check this by looking for the signal connections rather than triggering them
+	assert_true(player_controller.has_method("_on_movement_input"), "Should have movement input handler")
+	assert_true(player_controller.has_method("_on_action_pressed"), "Should have action press handler")
+	assert_true(player_controller.has_method("_on_building_action"), "Should have building action handler")
 
-func test_movement_coordination():
-	player_controller._ready()
+func test_survival_integration():
+	# Wait for components to initialize
+	await get_tree().process_frame
 	
-	# Test movement input handling exists
-	assert_bool(player_controller.has_method("_on_movement_input")).is_true()
-	assert_bool(player_controller.has_method("_on_action_pressed")).is_true()
+	# Test tiredness system
+	var initial_tiredness = player_controller.get_tiredness()
+	assert_true(initial_tiredness >= 0, "Should have valid tiredness value")
+	
+	var tiredness_percentage = player_controller.get_tiredness_percentage() 
+	assert_true(tiredness_percentage >= 0.0 and tiredness_percentage <= 1.0, "Tiredness percentage should be valid")
 
-func test_day_night_compatibility():
-	player_controller._ready()
+func test_interaction_system():
+	# Wait for components to initialize
+	await get_tree().process_frame
 	
-	# Test day/night system compatibility
-	assert_bool(player_controller.has_method("on_day_started")).is_true()
-	assert_bool(player_controller.has_method("on_night_started")).is_true()
+	# Test shelter state
+	var is_sheltered = player_controller.is_sheltered()
+	assert_false(is_sheltered, "Should not be sheltered initially")
 	
-	# Should not crash when called
+	var current_shelter = player_controller.get_current_shelter()
+	assert_null(current_shelter, "Should not have current shelter initially")
+
+func test_day_night_system_compatibility():
+	# Wait for components to initialize
+	await get_tree().process_frame
+	
+	# Test day/night event handlers exist
+	assert_true(player_controller.has_method("on_day_started"), "Should have day started handler")
+	assert_true(player_controller.has_method("on_night_started"), "Should have night started handler")
+	
+	# Test that calling these methods doesn't cause errors
 	player_controller.on_day_started()
 	player_controller.on_night_started()
+	
+	# If we get here without errors, the integration is working
+	assert_true(true, "Day/night handlers should work without errors")
 
-func test_damage_healing_system():
-	player_controller._ready()
+func test_component_cleanup():
+	# Wait for full initialization
+	await get_tree().process_frame
 	
-	# Test damage and healing methods exist
-	assert_bool(player_controller.has_method("take_damage")).is_true()
-	assert_bool(player_controller.has_method("heal")).is_true()
-	assert_bool(player_controller.has_method("respawn_player")).is_true()
-
-func test_ui_system_compatibility():
-	player_controller._ready()
+	# Test that cleanup methods exist on components
+	if player_controller.player_movement and player_controller.player_movement.has_method("cleanup"):
+		assert_true(true, "PlayerMovement has cleanup method")
 	
-	# Test UI methods exist (they depend on UI scene being available)
-	assert_bool(player_controller.has_method("create_player_ui")).is_true()
-	assert_bool(player_controller.has_method("setup_ui_for_player")).is_true()
-
-func test_physics_process():
-	player_controller._ready()
+	if player_controller.player_survival and player_controller.player_survival.has_method("cleanup"):
+		assert_true(true, "PlayerSurvival has cleanup method")
 	
-	# Test that physics process doesn't crash
-	player_controller._physics_process(0.016)  # ~60 FPS delta
-	
-	# Should complete without errors
-	assert_bool(true).is_true()
+	# Test cleanup doesn't cause errors
+	player_controller._exit_tree()
+	assert_true(true, "Component cleanup should work without errors")

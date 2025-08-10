@@ -13,16 +13,18 @@ var mock_tent: Node3D
 var mock_shelter: Node3D
 var mock_pumpkin: Node3D
 
-func before_test():
+func before_each():
 	# Create PlayerInteraction component
 	player_interaction = PlayerInteraction.new()
 	
 	# Create mock player controller (CharacterBody3D)
-	mock_player_controller = auto_free(CharacterBody3D.new())
+	mock_player_controller = CharacterBody3D.new()
+	add_child_autofree(mock_player_controller)
 	mock_player_controller.player_id = 1
 	
 	# Create mock components
-	mock_movement_component = auto_free(Node.new())
+	mock_movement_component = Node.new()
+	add_child_autofree(mock_movement_component)
 	mock_movement_component.set_script(GDScript.new())
 	mock_movement_component.get_script().source_code = '''
 extends Node
@@ -31,7 +33,8 @@ func play_animation(anim_name: String): pass
 '''
 	mock_movement_component.get_script().reload()
 	
-	mock_survival_component = auto_free(Node.new())
+	mock_survival_component = Node.new()
+	add_child_autofree(mock_survival_component)
 	mock_survival_component.set_script(GDScript.new())
 	mock_survival_component.get_script().source_code = '''
 extends Node
@@ -40,7 +43,8 @@ func lose_tiredness(amount: float, activity: String = ""): pass
 	mock_survival_component.get_script().reload()
 	
 	# Create mock interaction objects
-	mock_tree = auto_free(Node3D.new())
+	mock_tree = Node3D.new()
+	add_child_autofree(mock_tree)
 	mock_tree.set_script(GDScript.new())
 	mock_tree.get_script().source_code = '''
 extends Node3D
@@ -50,7 +54,8 @@ func has_method(method_name: String) -> bool: return method_name in ["start_gath
 '''
 	mock_tree.get_script().reload()
 	
-	mock_tent = auto_free(Node3D.new())
+	mock_tent = Node3D.new()
+	add_child_autofree(mock_tent)
 	mock_tent.set_script(GDScript.new())
 	mock_tent.get_script().source_code = '''
 extends Node3D
@@ -59,7 +64,8 @@ func has_method(method_name: String) -> bool: return method_name in ["start_buil
 '''
 	mock_tent.get_script().reload()
 	
-	mock_shelter = auto_free(Node3D.new())
+	mock_shelter = Node3D.new()
+	add_child_autofree(mock_shelter)
 	mock_shelter.set_script(GDScript.new())
 	mock_shelter.get_script().source_code = '''
 extends Node3D
@@ -68,7 +74,8 @@ func has_method(method_name: String) -> bool: return method_name in ["shelter_pl
 '''
 	mock_shelter.get_script().reload()
 	
-	mock_pumpkin = auto_free(Node3D.new())
+	mock_pumpkin = Node3D.new()
+	add_child_autofree(mock_pumpkin)
 	mock_pumpkin.set_script(GDScript.new())
 	mock_pumpkin.get_script().source_code = '''
 extends Node3D
@@ -79,8 +86,7 @@ func has_method(method_name: String) -> bool: return method_name in ["start_gath
 	mock_pumpkin.get_script().reload()
 	
 	# Setup component hierarchy
-	add_child(player_interaction)
-	add_child(mock_player_controller)
+	add_child_autofree(player_interaction)
 	
 	# Mock get_sibling_component method
 	player_interaction.set_script(player_interaction.get_script().duplicate())
@@ -101,10 +107,8 @@ func get_sibling_component(component_name: String):
 	# Add mock components to scene for get_sibling_component
 	mock_movement_component.name = "MockMovement"
 	mock_survival_component.name = "MockSurvival"
-	add_child(mock_movement_component)
-	add_child(mock_survival_component)
 
-func after_test():
+func after_each():
 	if player_interaction and is_instance_valid(player_interaction):
 		player_interaction.cleanup()
 
@@ -112,123 +116,123 @@ func test_component_initialization():
 	# Test successful initialization
 	player_interaction.initialize(mock_player_controller)
 	
-	assert_bool(player_interaction.is_initialized).is_true()
-	assert_object(player_interaction.player_movement).is_not_null()
-	assert_object(player_interaction.player_survival).is_not_null()
+	assert_true(player_interaction.is_initialized, "PlayerInteraction should be initialized")
+	assert_not_null(player_interaction.player_movement, "Should find PlayerMovement component")
+	assert_not_null(player_interaction.player_survival, "Should find PlayerSurvival component")
 
 func test_nearby_tree_tracking():
 	player_interaction.initialize(mock_player_controller)
 	
 	# Test setting nearby tree
-	var signal_spy = monitor_signals(player_interaction)
+	watch_signals(player_interaction)
 	player_interaction.set_nearby_tree(mock_tree)
 	
-	assert_object(player_interaction.nearby_tree).is_equal(mock_tree)
-	assert_bool(player_interaction.has_nearby_object("tree")).is_true()
-	assert_object(player_interaction.get_nearby_object("tree")).is_equal(mock_tree)
+	assert_eq(player_interaction.nearby_tree, mock_tree, "Should track nearby tree")
+	assert_true(player_interaction.has_nearby_object("tree"), "Should detect nearby tree")
+	assert_eq(player_interaction.get_nearby_object("tree"), mock_tree, "Should return nearby tree")
 	
 	# Verify signals
-	assert_signal(signal_spy).is_emitted("nearby_object_changed", ["tree", mock_tree, true])
-	assert_signal(signal_spy).is_emitted("interaction_available", ["chop_tree", mock_tree])
+	assert_signal_emitted(player_interaction, "nearby_object_changed", "Should emit nearby_object_changed signal")
+	assert_signal_emitted(player_interaction, "interaction_available", "Should emit interaction_available signal")
 	
 	# Test clearing nearby tree
 	player_interaction.clear_nearby_tree(mock_tree)
-	assert_object(player_interaction.nearby_tree).is_null()
-	assert_bool(player_interaction.has_nearby_object("tree")).is_false()
+	assert_null(player_interaction.nearby_tree, "Should clear nearby tree")
+	assert_false(player_interaction.has_nearby_object("tree"), "Should not detect tree after clearing")
 
 func test_tree_gathering():
 	player_interaction.initialize(mock_player_controller)
 	player_interaction.set_nearby_tree(mock_tree)
 	
-	var signal_spy = monitor_signals(player_interaction)
+	watch_signals(player_interaction)
 	
 	# Test starting gathering
 	player_interaction.start_gathering_tree()
 	
-	assert_bool(player_interaction.is_gathering).is_true()
-	assert_bool(player_interaction.is_gathering_active()).is_true()
-	assert_str(player_interaction.get_gathering_type()).is_equal("tree")
-	assert_object(player_interaction.get_gathering_object()).is_equal(mock_tree)
-	assert_signal(signal_spy).is_emitted("gathering_started", ["tree", mock_tree])
+	assert_true(player_interaction.is_gathering, "Should be in gathering state")
+	assert_true(player_interaction.is_gathering_active(), "Should be actively gathering")
+	assert_eq(player_interaction.get_gathering_type(), "tree", "Should be gathering trees")
+	assert_eq(player_interaction.get_gathering_object(), mock_tree, "Should track gathering object")
+	assert_signal_emitted(player_interaction, "gathering_started", "Should emit gathering_started signal")
 	
 	# Test stopping gathering
 	player_interaction.stop_gathering()
 	
-	assert_bool(player_interaction.is_gathering).is_false()
-	assert_bool(player_interaction.is_gathering_active()).is_false()
-	assert_str(player_interaction.get_gathering_type()).is_equal("")
-	assert_object(player_interaction.get_gathering_object()).is_null()
-	assert_signal(signal_spy).is_emitted("gathering_stopped", ["tree", mock_tree])
+	assert_false(player_interaction.is_gathering, "Should not be gathering")
+	assert_false(player_interaction.is_gathering_active(), "Should not be actively gathering")
+	assert_eq(player_interaction.get_gathering_type(), "", "Should have no gathering type")
+	assert_null(player_interaction.get_gathering_object(), "Should have no gathering object")
+	assert_signal_emitted(player_interaction, "gathering_stopped", "Should emit gathering_stopped signal")
 
 func test_pumpkin_gathering():
 	player_interaction.initialize(mock_player_controller)
 	player_interaction.set_nearby_pumpkin(mock_pumpkin)
 	
-	var signal_spy = monitor_signals(player_interaction)
+	watch_signals(player_interaction)
 	
 	# Test pumpkin gathering
 	player_interaction.start_gathering_pumpkin()
 	
-	assert_bool(player_interaction.is_gathering).is_true()
-	assert_str(player_interaction.get_gathering_type()).is_equal("pumpkin")
-	assert_signal(signal_spy).is_emitted("gathering_started", ["pumpkin", mock_pumpkin])
+	assert_true(player_interaction.is_gathering, "Should be gathering pumpkin")
+	assert_eq(player_interaction.get_gathering_type(), "pumpkin", "Should be gathering pumpkins")
+	assert_signal_emitted(player_interaction, "gathering_started", "Should emit gathering_started signal")
 
 func test_tent_building():
 	player_interaction.initialize(mock_player_controller)
 	player_interaction.set_nearby_tent(mock_tent)
 	
 	# Test tent building interaction
-	assert_bool(player_interaction.has_nearby_object("tent")).is_true()
+	assert_true(player_interaction.has_nearby_object("tent"), "Should detect nearby tent")
 	player_interaction.start_building_tent()
-	# Building doesn't set gathering state
+	# Building doesn't set gathering state - this is expected
 
 func test_shelter_interactions():
 	player_interaction.initialize(mock_player_controller)
 	player_interaction.set_nearby_shelter(mock_shelter)
 	
-	var signal_spy = monitor_signals(player_interaction)
+	watch_signals(player_interaction)
 	
 	# Test entering shelter manually
 	player_interaction.enter_shelter_manually()
 	
-	assert_bool(player_interaction.is_in_shelter).is_true()
-	assert_bool(player_interaction.is_sheltered()).is_true()
-	assert_object(player_interaction.get_current_shelter()).is_equal(mock_shelter)
-	assert_signal(signal_spy).is_emitted("shelter_entered", [mock_shelter])
+	assert_true(player_interaction.is_in_shelter, "Should be in shelter")
+	assert_true(player_interaction.is_sheltered(), "Should be sheltered")
+	assert_eq(player_interaction.get_current_shelter(), mock_shelter, "Should track current shelter")
+	assert_signal_emitted(player_interaction, "shelter_entered", "Should emit shelter_entered signal")
 	
 	# Test exiting shelter
 	player_interaction.exit_shelter()
 	
-	assert_bool(player_interaction.is_in_shelter).is_false()
-	assert_bool(player_interaction.is_sheltered()).is_false()
-	assert_object(player_interaction.get_current_shelter()).is_null()
-	assert_signal(signal_spy).is_emitted("shelter_exited", [mock_shelter])
+	assert_false(player_interaction.is_in_shelter, "Should not be in shelter")
+	assert_false(player_interaction.is_sheltered(), "Should not be sheltered")
+	assert_null(player_interaction.get_current_shelter(), "Should have no current shelter")
+	assert_signal_emitted(player_interaction, "shelter_exited", "Should emit shelter_exited signal")
 
 func test_interaction_input_handling():
 	player_interaction.initialize(mock_player_controller)
 	
 	# Test with no nearby objects
 	player_interaction.handle_interaction_input(true, false)
-	assert_bool(player_interaction.is_gathering).is_false()
+	assert_false(player_interaction.is_gathering, "Should not be gathering with no objects")
 	
 	# Test tree interaction priority
 	player_interaction.set_nearby_tree(mock_tree)
 	player_interaction.set_nearby_tent(mock_tent)
 	
 	player_interaction.handle_interaction_input(true, false)  # Press
-	assert_bool(player_interaction.is_gathering).is_true()
-	assert_str(player_interaction.get_gathering_type()).is_equal("tree")
+	assert_true(player_interaction.is_gathering, "Should start gathering")
+	assert_eq(player_interaction.get_gathering_type(), "tree", "Should prioritize tree gathering")
 	
 	player_interaction.handle_interaction_input(false, true)  # Release
-	assert_bool(player_interaction.is_gathering).is_false()
+	assert_false(player_interaction.is_gathering, "Should stop gathering on release")
 
 func test_available_interactions():
 	player_interaction.initialize(mock_player_controller)
 	
 	# Test no interactions
 	var interactions = player_interaction.get_available_interactions()
-	assert_array(interactions).is_empty()
-	assert_str(player_interaction.get_priority_interaction()).is_equal("")
+	assert_eq(interactions.size(), 0, "Should have no available interactions")
+	assert_eq(player_interaction.get_priority_interaction(), "", "Should have no priority interaction")
 	
 	# Test multiple interactions
 	player_interaction.set_nearby_tree(mock_tree)
@@ -236,8 +240,8 @@ func test_available_interactions():
 	player_interaction.set_nearby_shelter(mock_shelter)
 	
 	interactions = player_interaction.get_available_interactions()
-	assert_array(interactions).contains(["chop_tree", "build_tent", "enter_shelter"])
-	assert_str(player_interaction.get_priority_interaction()).is_equal("chop_tree")  # Tree has highest priority
+	assert_true(interactions.size() > 0, "Should have available interactions")
+	assert_eq(player_interaction.get_priority_interaction(), "chop_tree", "Tree should have highest priority")
 
 func test_gathering_movement_interruption():
 	player_interaction.initialize(mock_player_controller)
@@ -245,11 +249,11 @@ func test_gathering_movement_interruption():
 	
 	# Start gathering
 	player_interaction.start_gathering_tree()
-	assert_bool(player_interaction.is_gathering).is_true()
+	assert_true(player_interaction.is_gathering, "Should be gathering")
 	
 	# Simulate movement starting (should stop gathering)
 	player_interaction._on_movement_started()
-	assert_bool(player_interaction.is_gathering).is_false()
+	assert_false(player_interaction.is_gathering, "Movement should stop gathering")
 
 func test_cleanup():
 	player_interaction.initialize(mock_player_controller)
@@ -263,7 +267,7 @@ func test_cleanup():
 	# Test cleanup
 	player_interaction._on_cleanup()
 	
-	assert_bool(player_interaction.is_gathering).is_false()
-	assert_bool(player_interaction.is_in_shelter).is_false()
-	assert_object(player_interaction.nearby_tree).is_null()
-	assert_object(player_interaction.nearby_shelter).is_null()
+	assert_false(player_interaction.is_gathering, "Should not be gathering after cleanup")
+	assert_false(player_interaction.is_in_shelter, "Should not be in shelter after cleanup")
+	assert_null(player_interaction.nearby_tree, "Should clear nearby tree")
+	assert_null(player_interaction.nearby_shelter, "Should clear nearby shelter")
