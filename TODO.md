@@ -1,25 +1,17 @@
 # Metropolis - TODO List
 
-## 🎯 Current Status: Builder Component Complete!
+## 🎯 Current Status: Interaction Component Complete!
 **Date:** August 10, 2025  
-**Progress:** ✅ Steps 1-4 complete (Foundation, Movement, Survival, Builder)  
-**Ready for:** Step 5 - Interaction Component extraction  
-**See:** `/docs/step4-builder-complete.md` for completion summary
+**Progress:** ✅ Steps 1-5 complete (Foundation, Movement, Survival, Builder, Interaction)  
+**Ready for:** Step 6 - Input Handler Component extraction (final step!)  
+**See:** `/step5-interaction-complete.md` for completion summary
 
-## ✅ Completed Features
-  - [ ] Create PlayerInteractor component (~100 lines from player.gd)
-  - [ ] Migrate gathering, shelter enter/exit, nearby object tracking
-  - [ ] Test interaction system independentlyt 10, 2025  
-**Progress:** ✅ Steps 1-3 complete (Foundation, Movement, Survival)  
-**Ready for:** Step 4 - Builder Component extraction  
-**See:** `/docs/step3-survival-complete.md` for completion summary
-
-## ✅ Completed Features
-  - [ ] Migrate building mode, ghost preview, construction logic
-  - [ ] Test building system independently:** August 10, 2025  
-**Progress:** ✅ Step 1 complete, ✅ Step 2 component created (80%)  
-**Ready for:** Movement component integration testing  
-**See:** `/docs/step2-movement-progress.md` for detailed progress
+## 🚀 Next Priority: Step 6 - Input Handler Component
+- [ ] Create PlayerInputHandler component (~50 lines from player.gd)
+- [ ] Migrate multi-player input mapping (get_input_direction, get_action_key, get_build_key)
+- [ ] Device-specific control handling for multiple players
+- [ ] Test input isolation and player ID management
+- [ ] **Final Integration**: Replace legacy player.gd with new component architecture
 
 ## ✅ Completed Features
 
@@ -99,19 +91,19 @@
   - [ ] Migrate building mode, ghost preview, construction logic
   - [ ] Test building system independently
 
-- [ ] **Step 5: Extract Interaction Component** (6-8 hours)
-  - [ ] Create PlayerInteractor component (~100 lines from player.gd)
-  - [ ] Migrate gathering, shelter, object interaction logic
-  - [ ] Test interaction system independently
+- [ ] **Step 5: Extract Interaction Component** (6-8 hours) ✅ COMPLETE
+  - [x] Create PlayerInteraction component (~240 lines from player.gd) ✅
+  - [x] Migrate gathering, shelter, object interaction logic ✅
+  - [x] Test interaction system independently ✅
 
 - [ ] **Step 6: Extract Input Handler Component** (4-6 hours)
   - [ ] Create PlayerInputHandler component with multi-player support
   - [ ] Implement device-specific input mapping (keyboard + 3 gamepads)
   - [ ] Test input isolation between players
 
-**📋 Documentation:** See `/docs/player-system-refactoring-plan.md` for complete details
+**📋 Documentation:** See `/step5-interaction-complete.md` for latest completion summary
 **🎯 Goal:** Transform 639-line monolithic player script into clean component architecture
-**⏱️ Timeline:** 34-46 hours (2-3 weeks focused development)
+**⏱️ Timeline:** 83% complete (5/6 components) - Only Input Handler Component remaining!
 
 ### Multiplayer Foundation (After Player Refactoring)
 - [ ] Add player visual identification (colors, numbers, etc.)
