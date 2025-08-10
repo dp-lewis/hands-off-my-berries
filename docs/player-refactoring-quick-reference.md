@@ -9,11 +9,12 @@
 - [x] Set up component lifecycle management
 - [x] **Test:** Basic component instantiation and communication
 
-### **Step 2: Movement Component** 🚶‍♂️  
-- [ ] Extract movement logic from `player.gd` (~120 lines)
-- [ ] Create `components/player_movement.gd`
-- [ ] Migrate: `handle_movement()`, `play_animation()`, velocity logic
+### **Step 2: Movement Component** 🚶‍♂️ ✅ *COMPONENT CREATED*
+- [x] Extract movement logic from `player.gd` (~120 lines)
+- [x] Create `components/player_movement.gd`
+- [x] Migrate: `handle_movement()`, `play_animation()`, velocity logic
 - [ ] **Test:** Movement speed, animation states, input processing
+- [ ] **Integrate:** Replace movement logic in player.gd with component calls
 
 ### **Step 3: Survival Component** ⚕️
 - [ ] Extract survival logic from `player.gd` (~150 lines)  

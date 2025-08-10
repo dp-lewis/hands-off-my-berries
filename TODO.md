@@ -1,10 +1,10 @@
 # Metropolis - TODO List
 
-## 🎯 Current Status: Foundation Complete!
+## 🎯 Current Status: Movement Component Ready!
 **Date:** August 10, 2025  
-**Progress:** ✅ Step 1 Foundation complete with passing tests  
-**Ready for:** Step 2 - Movement Component extraction  
-**See:** `/docs/step1-foundation-complete.md` for completion summary
+**Progress:** ✅ Step 1 complete, ✅ Step 2 component created (80%)  
+**Ready for:** Movement component integration testing  
+**See:** `/docs/step2-movement-progress.md` for detailed progress
 
 ## ✅ Completed Features
 
@@ -68,10 +68,11 @@
   - [x] Set up component lifecycle management ✅
   - [x] Create test framework with mocks ✅
 
-- [ ] **Step 2: Extract Movement Component** (6-8 hours) 🔄 NEXT
-  - [ ] Create PlayerMovement component (~120 lines from player.gd)
-  - [ ] Migrate movement, physics, and animation logic
-  - [ ] Test movement functionality independently
+- [x] **Step 2: Extract Movement Component** (6-8 hours) � 80% COMPLETE
+  - [x] Create PlayerMovement component (~120 lines from player.gd) ✅
+  - [x] Migrate movement, physics, and animation logic ✅
+  - [ ] Test movement functionality independently 🔄 NEXT
+  - [ ] Integrate component into existing player scene 🔄 NEXT
 
 - [ ] **Step 3: Extract Survival Component** (6-8 hours)
   - [ ] Create PlayerSurvival component (~150 lines from player.gd)
