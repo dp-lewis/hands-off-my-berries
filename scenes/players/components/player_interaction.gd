@@ -82,20 +82,38 @@ func _handle_interaction_pressed():
 	if not interaction_enabled:
 		return
 		
+	# Debug: Show current nearby objects
+	print("DEBUG: Player ", player_controller.player_id, " interaction pressed. Nearby objects:")
+	print("  - nearby_tree: ", nearby_tree)
+	print("  - nearby_tent: ", nearby_tent) 
+	print("  - nearby_shelter: ", nearby_shelter)
+	print("  - nearby_pumpkin: ", nearby_pumpkin)
+	print("  - is_in_shelter: ", is_in_shelter)
+	print("  - is_gathering: ", is_gathering)
+		
 	# Priority order for interactions:
 	# 1. Tree gathering (if not already gathering)
-	# 2. Tent building
-	# 3. Shelter entry
+	# 2. Shelter entry/exit (built tents take priority over building)
+	# 3. Tent building (only if tent is not built)
 	# 4. Pumpkin gathering (if not already gathering)
 	
 	if nearby_tree and not is_gathering:
+		print("DEBUG: Starting tree gathering")
 		start_gathering_tree()
-	elif nearby_tent:
-		start_building_tent()
 	elif nearby_shelter and not is_in_shelter:
+		print("DEBUG: Attempting to enter shelter")
 		enter_shelter_manually()
+	elif is_in_shelter:
+		print("DEBUG: Exiting shelter")
+		exit_shelter()
+	elif nearby_tent:
+		print("DEBUG: Starting tent building")
+		start_building_tent()
 	elif nearby_pumpkin and not is_gathering:
+		print("DEBUG: Starting pumpkin gathering")
 		start_gathering_pumpkin()
+	else:
+		print("DEBUG: No valid interactions available")
 
 func _handle_interaction_released():
 	# Stop gathering if action key is released (building doesn't need to be stopped)
@@ -249,22 +267,37 @@ func start_building_tent():
 
 # Shelter interaction methods
 func set_nearby_shelter(shelter: Node3D):
+	print("DEBUG: set_nearby_shelter called for player ", player_controller.player_id)
+	print("DEBUG: Current nearby_shelter: ", nearby_shelter)
+	print("DEBUG: New shelter: ", shelter)
 	if nearby_shelter != shelter:
 		nearby_shelter = shelter
 		nearby_object_changed.emit("shelter", shelter, true)
 		interaction_available.emit("enter_shelter", shelter)
 		print("Player ", player_controller.player_id, " can enter tent shelter")
+	else:
+		print("DEBUG: Shelter already set, ignoring duplicate")
 
 func clear_nearby_shelter(shelter: Node3D):
+	print("DEBUG: clear_nearby_shelter called for player ", player_controller.player_id)
+	print("DEBUG: Shelter to clear: ", shelter)
+	print("DEBUG: Current nearby_shelter: ", nearby_shelter)
 	if nearby_shelter == shelter:
 		nearby_shelter = null
 		nearby_object_changed.emit("shelter", shelter, false)
 		print("Player ", player_controller.player_id, " can no longer enter tent shelter")
+	else:
+		print("DEBUG: Shelter doesn't match, not clearing")
 
 func enter_shelter_manually():
 	if nearby_shelter and nearby_shelter.has_method("shelter_player"):
+		print("Player ", player_controller.player_id, " attempting to enter shelter...")
 		if nearby_shelter.shelter_player(player_controller):
 			enter_shelter_internal(nearby_shelter)
+		else:
+			print("Player ", player_controller.player_id, " could not enter shelter (may not be built)")
+	else:
+		print("Player ", player_controller.player_id, " has no nearby shelter to enter")
 
 func enter_tent_shelter(shelter: Node3D):
 	# This method is called by the tent for automatic tracking
@@ -273,8 +306,22 @@ func enter_tent_shelter(shelter: Node3D):
 func enter_shelter_internal(shelter: Node3D):
 	is_in_shelter = true
 	current_shelter = shelter
+	
+	# Hide player and disable movement
+	if player_controller:
+		# Hide the player
+		player_controller.visible = false
+		
+		# Disable movement
+		if player_movement and player_movement.has_method("set_movement_enabled"):
+			player_movement.set_movement_enabled(false)
+		
+		# Notify survival system about shelter
+		if player_survival and player_survival.has_method("enter_shelter"):
+			player_survival.enter_shelter(shelter)
+	
 	shelter_entered.emit(shelter)
-	print("Player ", player_controller.player_id, " entered tent shelter - safe from night!")
+	print("Player ", player_controller.player_id, " entered tent shelter - hidden and safe from night!")
 
 func exit_tent_shelter(shelter: Node3D):
 	if current_shelter == shelter:
@@ -285,6 +332,20 @@ func exit_shelter():
 		var shelter = current_shelter
 		is_in_shelter = false
 		current_shelter = null
+		
+		# Show player and re-enable movement
+		if player_controller:
+			# Show the player
+			player_controller.visible = true
+			
+			# Re-enable movement
+			if player_movement and player_movement.has_method("set_movement_enabled"):
+				player_movement.set_movement_enabled(true)
+			
+			# Notify survival system about leaving shelter
+			if player_survival and player_survival.has_method("exit_shelter"):
+				player_survival.exit_shelter()
+		
 		shelter_exited.emit(shelter)
 		print("Player ", player_controller.player_id, " left tent shelter")
 

@@ -405,6 +405,9 @@ func respawn_player():
 	
 	# Re-enable movement and interactions
 	if player_controller:
+		# Restore visibility (in case player was hidden in shelter)
+		player_controller.visible = true
+		
 		var movement = get_sibling_component("movement")
 		if movement and movement.has_method("set_movement_enabled"):
 			movement.set_movement_enabled(true)

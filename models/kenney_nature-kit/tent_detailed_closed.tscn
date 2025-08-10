@@ -1,14 +1,17 @@
-[gd_scene load_steps=4 format=3 uid="uid://cfaf2owsl7m5"]
+[gd_scene load_steps=5 format=3 uid="uid://cfaf2owsl7m5"]
 
 [ext_resource type="PackedScene" uid="uid://cfhdj32052dsd" path="res://models/kenney_nature-kit/tent_detailedClosed.glb" id="1_wrbet"]
+[ext_resource type="Script" uid="uid://dnprddebdrjcp" path="res://models/kenney_nature-kit/tent.gd" id="2_tent"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_nq8th"]
 size = Vector3(2.61768, 1, 1.93402)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_54smi"]
-size = Vector3(1.30615, 1, 0.403198)
+size = Vector3(1.30615, 1, 0.683899)
 
 [node name="tent_detailedClosed2" instance=ExtResource("1_wrbet")]
+script = ExtResource("2_tent")
+start_built = true
 
 [node name="tmpParent" parent="." index="0"]
 transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0.153079, 0)
@@ -19,8 +22,14 @@ transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0.153079, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00756836, 0.494956, 0.00259399)
 shape = SubResource("BoxShape3D_nq8th")
 
-[node name="Area3D" type="Area3D" parent="." index="2"]
+[node name="BuildArea" type="Area3D" parent="." index="2"]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0202637, 0.494956, 1.14034)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BuildArea" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0202637, 0.494956, 0.050954)
+shape = SubResource("BoxShape3D_54smi")
+
+[node name="ShelterArea" type="Area3D" parent="." index="3"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ShelterArea" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0202637, 0.494956, 1.33682)
 shape = SubResource("BoxShape3D_54smi")

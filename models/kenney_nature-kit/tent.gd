@@ -2,6 +2,7 @@ extends Node3D
 
 @export var wood_cost: int = 8  # Cost to build the tent
 @export var build_time: float = 5.0  # Time to construct (increased for background building)
+@export var start_built: bool = false  # For testing - start as built tent
 
 var current_builder: Node = null
 var build_progress: float = 0.0
@@ -23,8 +24,16 @@ func _ready():
 	# Set up areas
 	setup_areas()
 	
-	# Start as blueprint (semi-transparent)
-	show_as_blueprint()
+	# Initialize tent state
+	if start_built:
+		# Start as built tent for testing
+		is_built = true
+		show_as_built()
+		print("Tent started as built (testing mode)")
+	else:
+		# Start as blueprint (semi-transparent)
+		show_as_blueprint()
+		print("Tent started as blueprint (needs building)")
 
 func setup_areas():
 	# Find existing areas or create them
@@ -186,20 +195,34 @@ func _on_player_exited(body):
 
 # Building area functions
 func _on_build_area_entered(body):
+	var player_id = body.player_id if body.has_method("get_player_id") or "player_id" in body else "unknown"
+	print("DEBUG: Tent build area entered by: ", body.name, " (player_id: ", player_id, ")")
+	print("DEBUG: Tent state - is_built: ", is_built, ", is_being_built: ", is_being_built)
 	if body.has_method("start_building_tent") and not is_built and not is_being_built:
+		print("DEBUG: Setting nearby tent for building")
 		body.set_nearby_tent(self)
+	else:
+		print("DEBUG: Not setting nearby tent - conditions not met")
 
 func _on_build_area_exited(body):
+	print("DEBUG: Tent build area exited by: ", body.name)
 	if body.has_method("clear_nearby_tent"):
 		body.clear_nearby_tent(self)
 
 # Shelter area functions
 func _on_shelter_entered(body):
+	var player_id = body.player_id if body.has_method("get_player_id") or "player_id" in body else "unknown"
+	print("DEBUG: Tent shelter area entered by: ", body.name, " (player_id: ", player_id, ")")
+	print("DEBUG: Tent state - is_built: ", is_built, ", is_being_built: ", is_being_built)
 	if is_built and body.has_method("set_nearby_shelter"):
+		print("DEBUG: Setting nearby shelter for player")
 		body.set_nearby_shelter(self)
 		print("Player ", body.player_id, " can now enter tent shelter")
+	else:
+		print("DEBUG: Not setting nearby shelter - tent not built or player lacks method")
 
 func _on_shelter_exited(body):
+	print("DEBUG: Tent shelter area exited by: ", body.name)
 	if body.has_method("clear_nearby_shelter"):
 		body.clear_nearby_shelter(self)
 		print("Player ", body.player_id, " left tent shelter area")
