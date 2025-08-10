@@ -8,6 +8,7 @@ var current_builder: Node = null
 var build_progress: float = 0.0
 var is_being_built: bool = false
 var is_built: bool = false
+var is_night_time: bool = false
 
 # Shelter functionality
 var players_inside: Array[Node] = []
@@ -16,10 +17,18 @@ var progress_bar: Node3D
 @onready var build_area: Area3D
 @onready var shelter_area: Area3D
 @onready var tent_mesh: Node3D
+@export var tent_light:Light3D = null  # Reference to the tent light
 
 func _ready():
+	# Add to tents group for game manager to find
+	add_to_group("tents")
+	
 	# Find the tent mesh
 	tent_mesh = get_child(0)  # The tmpParent from GLB
+	
+	if tent_light:
+		print("Tent light found: ", tent_light.name)
+		tent_light.visible = false  # Start with light off
 	
 	# Set up areas
 	setup_areas()
@@ -98,36 +107,18 @@ func _process(delta):
 			complete_building()
 
 func show_as_blueprint():
-	# Make tent semi-transparent to show it's not built yet
-	if tent_mesh:
-		make_transparent(tent_mesh, 0.3)  # Very transparent blueprint
-		make_desaturated(tent_mesh, 0.5)  # Grayish blueprint color
+	# Blueprint state - just print status, no visual changes
 	print("Tent blueprint placed - needs ", wood_cost, " wood to build")
 
 func show_as_built():
-	# Make tent fully visible with full color
-	if tent_mesh:
-		make_transparent(tent_mesh, 1.0)
-		make_desaturated(tent_mesh, 1.0)  # Full color saturation
+	# Built state - just print status, no visual changes
 	print("Tent construction complete!")
 
 func update_building_visuals():
-	if tent_mesh and is_being_built:
-		# Update progress bar
+	if is_being_built:
+		# Update progress bar only
 		if progress_bar:
 			progress_bar.call("set_progress", build_progress)
-		
-		# Progressive opacity: 30% (blueprint) → 100% (built)
-		var alpha = 0.3 + (build_progress * 0.7)
-		make_transparent(tent_mesh, alpha)
-		
-		# Progressive color saturation: 50% → 100%
-		var saturation = 0.5 + (build_progress * 0.5)
-		make_desaturated(tent_mesh, saturation)
-		
-		# Progressive scale: starts smaller and grows
-		var scale_factor = 0.7 + (build_progress * 0.3)  # 70% to 100% scale
-		tent_mesh.scale = Vector3.ONE * scale_factor
 
 func create_building_progress_bar():
 	if not progress_bar:
@@ -146,44 +137,17 @@ func destroy_building_progress_bar():
 		progress_bar.queue_free()
 		progress_bar = null
 
-func make_transparent(node: Node3D, alpha: float):
-	var mesh_instances = find_mesh_instances(node)
-	for mesh_instance in mesh_instances:
-		var material = StandardMaterial3D.new()
-		material.albedo_color = Color(1, 1, 1, alpha)
-		if alpha < 1.0:
-			material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		mesh_instance.material_override = material
-
-func make_desaturated(node: Node3D, saturation: float):
-	var mesh_instances = find_mesh_instances(node)
-	for mesh_instance in mesh_instances:
-		# Get existing material or create new one
-		var material = mesh_instance.material_override
-		if not material:
-			material = StandardMaterial3D.new()
-		else:
-			material = material.duplicate()
-		
-		# Adjust color saturation (gray when saturation is low)
-		var base_color = Color.WHITE
-		if saturation < 1.0:
-			# Blend with gray for desaturation effect
-			var gray = Color.GRAY
-			base_color = gray.lerp(Color.WHITE, saturation)
-		
-		material.albedo_color = Color(base_color.r, base_color.g, base_color.b, material.albedo_color.a)
-		mesh_instance.material_override = material
-
-func find_mesh_instances(node: Node) -> Array:
-	var mesh_instances = []
-	if node is MeshInstance3D:
-		mesh_instances.append(node)
+func find_light_component(node: Node) -> Light3D:
+	"""Recursively find the first Light3D component in the node tree"""
+	if node is Light3D:
+		return node
 	
 	for child in node.get_children():
-		mesh_instances += find_mesh_instances(child)
+		var light = find_light_component(child)
+		if light:
+			return light
 	
-	return mesh_instances
+	return null
 
 func _on_player_entered(body):
 	if body.has_method("start_building_tent") and not is_built and not is_being_built:
@@ -214,7 +178,16 @@ func _on_shelter_entered(body):
 	var player_id = body.player_id if body.has_method("get_player_id") or "player_id" in body else "unknown"
 	print("DEBUG: Tent shelter area entered by: ", body.name, " (player_id: ", player_id, ")")
 	print("DEBUG: Tent state - is_built: ", is_built, ", is_being_built: ", is_being_built)
+	print("DEBUG: Tent occupancy - ", players_inside.size(), " players inside")
+	
 	if is_built and body.has_method("set_nearby_shelter"):
+		# Check if tent is already occupied
+		if players_inside.size() > 0 and body not in players_inside:
+			var occupant = players_inside[0]
+			print("DEBUG: Tent occupied by Player ", occupant.player_id, " - not setting nearby shelter")
+			# Don't set nearby shelter if tent is occupied by someone else
+			return
+		
 		print("DEBUG: Setting nearby shelter for player")
 		body.set_nearby_shelter(self)
 		print("Player ", body.player_id, " can now enter tent shelter")
@@ -230,15 +203,29 @@ func _on_shelter_exited(body):
 		# If player was sheltered, remove them from shelter
 		if body in players_inside:
 			players_inside.erase(body)
+			update_tent_light()  # Update light when player exits
 			if body.has_method("exit_tent_shelter"):
 				body.exit_tent_shelter(self)
 
 func shelter_player(player: Node) -> bool:
-	if is_built and player not in players_inside:
-		players_inside.append(player)
-		print("Player ", player.player_id, " manually entered tent shelter")
-		return true
-	return false
+	if not is_built:
+		print("Tent is not built yet!")
+		return false
+	
+	if player in players_inside:
+		print("Player ", player.player_id, " is already in this tent!")
+		return false
+	
+	# Check if tent is already occupied (limit to 1 player per tent)
+	if players_inside.size() > 0:
+		var occupant = players_inside[0]
+		print("Tent is occupied by Player ", occupant.player_id, "! Player ", player.player_id, " cannot enter.")
+		return false
+	
+	players_inside.append(player)
+	update_tent_light()  # Update light when player enters
+	print("Player ", player.player_id, " manually entered tent shelter")
+	return true
 
 func start_building(player: Node) -> bool:
 	if is_built:
@@ -288,6 +275,9 @@ func complete_building():
 	# Remove progress bar and show final state
 	destroy_building_progress_bar()
 	show_as_built()
+	
+	# Update light availability now that tent is built
+	update_tent_light()
 
 func get_build_progress() -> float:
 	return build_progress
@@ -303,3 +293,38 @@ func has_player_inside(player: Node) -> bool:
 
 func get_shelter_count() -> int:
 	return players_inside.size()
+
+# Light control system
+func update_tent_light():
+	"""Update tent light based on occupancy and night time"""
+	if not tent_light:
+		return
+	
+	var should_light_be_on = is_night_time and players_inside.size() > 0 and is_built
+	
+	if should_light_be_on and not tent_light.visible:
+		tent_light.visible = true
+		print("Tent light turned ON (night time, occupied)")
+	elif not should_light_be_on and tent_light.visible:
+		tent_light.visible = false
+		var reason = ""
+		if not is_night_time:
+			reason = "day time"
+		elif players_inside.size() == 0:
+			reason = "unoccupied"
+		elif not is_built:
+			reason = "not built"
+		print("Tent light turned OFF (", reason, ")")
+
+# Day/Night system interface
+func on_night_started():
+	"""Called when night begins"""
+	is_night_time = true
+	update_tent_light()
+	print("Tent: Night started")
+
+func on_day_started():
+	"""Called when day begins"""
+	is_night_time = false
+	update_tent_light()
+	print("Tent: Day started")

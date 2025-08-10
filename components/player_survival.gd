@@ -29,7 +29,7 @@ var is_dead: bool = false
 @export var base_tiredness_rate: float = 3.0  # Base tiredness lost per minute
 @export var walking_tiredness_rate: float = 0.3  # Tiredness lost per second while moving
 @export var night_tiredness_penalty: float = 2.0  # Additional tiredness lost per minute at night without shelter
-@export var tent_recovery_rate: float = 10.0  # Tiredness recovered per minute in tent
+@export var tent_recovery_rate: float = 1.0  # Tiredness recovered per second in tent
 @export var tiredness_health_decrease_rate: float = 3.0  # Health lost per minute when exhausted
 
 # Component references
@@ -201,7 +201,7 @@ func handle_tiredness_system(delta: float):
 	
 	# Recover tiredness if in shelter
 	if is_in_shelter:
-		tiredness += (tent_recovery_rate / 60.0) * delta
+		tiredness += (tent_recovery_rate / 1.0) * delta
 	
 	# Clamp tiredness to valid range
 	tiredness = clamp(tiredness, 0.0, max_tiredness)

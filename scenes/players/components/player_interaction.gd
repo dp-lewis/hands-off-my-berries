@@ -295,7 +295,13 @@ func enter_shelter_manually():
 		if nearby_shelter.shelter_player(player_controller):
 			enter_shelter_internal(nearby_shelter)
 		else:
-			print("Player ", player_controller.player_id, " could not enter shelter (may not be built)")
+			# Check specific reasons why shelter entry failed
+			if not nearby_shelter.is_tent_built():
+				print("Player ", player_controller.player_id, " could not enter shelter (not built)")
+			elif nearby_shelter.get_shelter_count() > 0:
+				print("Player ", player_controller.player_id, " could not enter shelter (occupied by another player)")
+			else:
+				print("Player ", player_controller.player_id, " could not enter shelter (unknown reason)")
 	else:
 		print("Player ", player_controller.player_id, " has no nearby shelter to enter")
 

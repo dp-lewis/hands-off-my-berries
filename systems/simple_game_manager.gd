@@ -42,12 +42,24 @@ func _on_day_started():
 	for player in players:
 		if player.has_method("on_day_started"):
 			player.on_day_started()
+	
+	# Tell all tents it's day
+	var tents = get_tree().get_nodes_in_group("tents")
+	for tent in tents:
+		if tent.has_method("on_day_started"):
+			tent.on_day_started()
 
 func _on_night_started():
 	# Tell all players it's night
 	for player in players:
 		if player.has_method("on_night_started"):
 			player.on_night_started()
+	
+	# Tell all tents it's night
+	var tents = get_tree().get_nodes_in_group("tents")
+	for tent in tents:
+		if tent.has_method("on_night_started"):
+			tent.on_night_started()
 
 # Debug input
 func _input(event):
