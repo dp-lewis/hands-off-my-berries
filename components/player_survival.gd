@@ -67,7 +67,7 @@ func find_resource_manager():
 
 func connect_to_movement_component():
 	"""Connect to movement component signals"""
-	var movement = get_sibling_component("PlayerMovement")
+	var movement = get_sibling_component("movement")
 	if movement:
 		if movement.has_signal("movement_started"):
 			movement.movement_started.connect(_on_movement_started)

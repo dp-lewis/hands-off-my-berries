@@ -58,7 +58,7 @@ func find_resource_manager():
 
 func find_survival_component():
 	"""Find the survival component for tiredness management"""
-	survival_component = get_sibling_component("PlayerSurvival")
+	survival_component = get_sibling_component("survival")
 	if survival_component:
 		print("PlayerBuilder: Connected to survival component")
 

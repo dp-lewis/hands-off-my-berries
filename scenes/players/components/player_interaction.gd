@@ -35,9 +35,9 @@ var player_movement # : PlayerMovement (dynamic typing)
 var player_survival # : PlayerSurvival (dynamic typing)
 
 func _on_initialize() -> void:
-	# Get component references
-	player_movement = get_sibling_component("PlayerMovement")
-	player_survival = get_sibling_component("PlayerSurvival")
+	# Get component references - use lowercase names to match PlayerController
+	player_movement = get_sibling_component("movement")
+	player_survival = get_sibling_component("survival")
 	
 	if not player_movement:
 		emit_error("PlayerMovement component not found")
@@ -132,6 +132,8 @@ func start_gathering_tree():
 			
 			gathering_started.emit("tree", nearby_tree)
 			print("Player ", player_controller.player_id, " started gathering tree")
+			return true
+	return false
 
 # Pumpkin interaction methods
 func set_nearby_pumpkin(pumpkin: Node3D):

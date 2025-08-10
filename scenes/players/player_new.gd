@@ -131,7 +131,7 @@ func _physics_process(delta):
 	
 	# Update builder ghost positioning
 	if player_builder and player_builder.is_in_building_mode():
-		player_builder.update_ghost_position(global_position)
+		player_builder.update_ghost_position()
 	
 	# Note: Movement physics is handled by PlayerMovement component
 
@@ -143,12 +143,18 @@ func _on_movement_input(direction: Vector2):
 
 func _on_action_pressed():
 	"""Handle action button press"""
-	if player_interaction:
+	# Check if in build mode first
+	if player_builder and player_builder.is_in_building_mode():
+		# In build mode, action places building
+		player_builder.place_building()
+	elif player_interaction:
+		# Normal mode, handle interactions
 		player_interaction.handle_interaction_input(true, false)
 
 func _on_action_released():
 	"""Handle action button release"""
-	if player_interaction:
+	# Only route to interaction if not in build mode
+	if not (player_builder and player_builder.is_in_building_mode()) and player_interaction:
 		player_interaction.handle_interaction_input(false, true)
 
 func _on_build_mode_toggled():
@@ -207,6 +213,15 @@ func set_nearby_tree(tree: Node3D):
 func clear_nearby_tree(tree: Node3D):
 	if player_interaction:
 		player_interaction.clear_nearby_tree(tree)
+
+func start_gathering_tree():
+	if player_interaction:
+		return player_interaction.start_gathering_tree()
+	return false
+
+func stop_gathering():
+	if player_interaction:
+		player_interaction.stop_gathering()
 
 # Pumpkin interaction compatibility
 func set_nearby_pumpkin(pumpkin: Node3D):

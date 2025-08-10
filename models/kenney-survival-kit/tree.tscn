@@ -6,7 +6,7 @@
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_s4cnd"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_fyjqj"]
-radius = 0.877441
+radius = 5.0
 
 [node name="tree2" instance=ExtResource("1_s4cnd")]
 script = ExtResource("2_fyjqj")
