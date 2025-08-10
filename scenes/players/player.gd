@@ -59,17 +59,17 @@ func setup_components():
 	"""Initialize all player components"""
 	
 	# Create components (load scripts dynamically)
-	var PlayerMovement = load("res://components/player_movement.gd")
-	var PlayerSurvival = load("res://components/player_survival.gd")
-	var PlayerBuilder = load("res://components/player_builder.gd")
-	var PlayerInteraction = load("res://scenes/players/components/player_interaction.gd")
-	var PlayerInputHandler = load("res://scenes/players/components/player_input_handler.gd")
+	var PlayerMovementScript = load("res://components/player_movement.gd")
+	var PlayerSurvivalScript = load("res://components/player_survival.gd")
+	var PlayerBuilderScript = load("res://components/player_builder.gd")
+	var PlayerInteractionScript = load("res://scenes/players/components/player_interaction.gd")
+	var PlayerInputHandlerScript = load("res://scenes/players/components/player_input_handler.gd")
 	
-	player_movement = PlayerMovement.new()
-	player_survival = PlayerSurvival.new()
-	player_builder = PlayerBuilder.new()
-	player_interaction = PlayerInteraction.new()
-	player_input_handler = PlayerInputHandler.new()
+	player_movement = PlayerMovementScript.new()
+	player_survival = PlayerSurvivalScript.new()
+	player_builder = PlayerBuilderScript.new()
+	player_interaction = PlayerInteractionScript.new()
+	player_input_handler = PlayerInputHandlerScript.new()
 	
 	# Add components as children
 	add_child(player_movement)
@@ -94,32 +94,32 @@ func connect_component_signals():
 	"""Connect signals between components for coordination"""
 	
 	# Input Handler -> Other Components
-	if player_input_handler.has_signal("movement_input"):
+	if player_input_handler.has_signal("movement_input") and not player_input_handler.movement_input.is_connected(_on_movement_input):
 		player_input_handler.movement_input.connect(_on_movement_input)
-	if player_input_handler.has_signal("action_pressed"):
+	if player_input_handler.has_signal("action_pressed") and not player_input_handler.action_pressed.is_connected(_on_action_pressed):
 		player_input_handler.action_pressed.connect(_on_action_pressed)
-	if player_input_handler.has_signal("action_released"):
+	if player_input_handler.has_signal("action_released") and not player_input_handler.action_released.is_connected(_on_action_released):
 		player_input_handler.action_released.connect(_on_action_released)
-	if player_input_handler.has_signal("build_mode_toggled"):
+	if player_input_handler.has_signal("build_mode_toggled") and not player_input_handler.build_mode_toggled.is_connected(_on_build_mode_toggled):
 		player_input_handler.build_mode_toggled.connect(_on_build_mode_toggled)
 	
 	# Movement -> Interaction (movement interrupts gathering)
-	if player_movement.has_signal("movement_started"):
+	if player_movement.has_signal("movement_started") and not player_movement.movement_started.is_connected(player_interaction._on_movement_started):
 		player_movement.movement_started.connect(player_interaction._on_movement_started)
 	
 	# Interaction -> Movement (for animations)
-	if player_interaction.has_signal("gathering_started"):
+	if player_interaction.has_signal("gathering_started") and not player_interaction.gathering_started.is_connected(_on_gathering_started):
 		player_interaction.gathering_started.connect(_on_gathering_started)
-	if player_interaction.has_signal("gathering_stopped"):
+	if player_interaction.has_signal("gathering_stopped") and not player_interaction.gathering_stopped.is_connected(_on_gathering_stopped):
 		player_interaction.gathering_stopped.connect(_on_gathering_stopped)
 	
 	# Builder -> Survival (for tiredness costs)
-	if player_builder.has_signal("building_action"):
+	if player_builder.has_signal("building_action") and not player_builder.building_action.is_connected(_on_building_action):
 		player_builder.building_action.connect(_on_building_action)
 	
 	# Component errors
 	for component in [player_movement, player_survival, player_builder, player_interaction, player_input_handler]:
-		if component.has_signal("component_error"):
+		if component.has_signal("component_error") and not component.component_error.is_connected(_on_component_error):
 			component.component_error.connect(_on_component_error)
 
 func _physics_process(delta):

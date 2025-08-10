@@ -13,9 +13,9 @@ func before_each():
 	test_scene = Node3D.new()
 	add_child_autofree(test_scene)
 	
-	# Create player controller with full component system
-	player_controller = PlayerControllerScript.new()
-	player_controller.player_id = 0
+	# Create player controller with proper script attachment
+	player_controller = CharacterBody3D.new()
+	player_controller.set_script(PlayerControllerScript)
 	
 	# Create ResourceManager child node (required by PlayerController)
 	var ResourceManagerScript = load("res://components/resource_manager.gd")
@@ -23,7 +23,11 @@ func before_each():
 	resource_manager.name = "ResourceManager"
 	player_controller.add_child(resource_manager)
 	
+	# Add to scene 
 	test_scene.add_child(player_controller)
+	
+	# Try setting player_id through set() method instead
+	player_controller.set("player_id", 0)
 	
 	# Wait for components to initialize
 	await get_tree().process_frame

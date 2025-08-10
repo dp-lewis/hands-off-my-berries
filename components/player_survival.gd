@@ -232,6 +232,14 @@ func respawn_player():
 
 # Night and Day System
 
+func on_day_started() -> void:
+	"""Called when day starts - interface for PlayerController"""
+	apply_day_recovery()
+
+func on_night_started() -> void:
+	"""Called when night starts - interface for PlayerController"""
+	apply_night_penalty()
+
 func apply_night_penalty() -> void:
 	"""Apply night penalties - called by day/night system"""
 	is_night_time = true
