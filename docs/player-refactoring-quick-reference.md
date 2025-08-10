@@ -23,11 +23,12 @@
 - [x] **Test:** Stat calculations, auto-eat behavior, shelter recovery
 - [x] **Integrate:** Signal-based UI updates, movement integration
 
-### **Step 4: Builder Component** 🏗️
-- [ ] Extract building logic from `player.gd` (~200 lines)
-- [ ] Create `components/player_builder.gd`  
-- [ ] Migrate: build mode, ghost preview, tent construction
-- [ ] **Test:** Build mode states, ghost positioning, resource validation
+### **Step 4: Builder Component** 🏗️ ✅ *COMPLETE*
+- [x] Extract building logic from `player.gd` (~200 lines)
+- [x] Create `components/player_builder.gd`  
+- [x] Migrate: build mode, ghost preview, tent construction
+- [x] **Test:** Build mode states, ghost positioning, resource validation
+- [x] **Integrate:** Multi-building support, signal-driven architecture
 
 ### **Step 5: Interaction Component** 🤝
 - [ ] Extract interaction logic from `player.gd` (~100 lines)

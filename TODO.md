@@ -1,7 +1,15 @@
 # Metropolis - TODO List
 
-## 🎯 Current Status: Survival Component Complete!
+## 🎯 Current Status: Builder Component Complete!
 **Date:** August 10, 2025  
+**Progress:** ✅ Steps 1-4 complete (Foundation, Movement, Survival, Builder)  
+**Ready for:** Step 5 - Interaction Component extraction  
+**See:** `/docs/step4-builder-complete.md` for completion summary
+
+## ✅ Completed Features
+  - [ ] Create PlayerInteractor component (~100 lines from player.gd)
+  - [ ] Migrate gathering, shelter enter/exit, nearby object tracking
+  - [ ] Test interaction system independentlyt 10, 2025  
 **Progress:** ✅ Steps 1-3 complete (Foundation, Movement, Survival)  
 **Ready for:** Step 4 - Builder Component extraction  
 **See:** `/docs/step3-survival-complete.md` for completion summary
