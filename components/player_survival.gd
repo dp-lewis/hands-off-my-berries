@@ -19,18 +19,18 @@ var current_shelter: Node3D = null
 var is_dead: bool = false
 
 # Survival configuration (export for easy tweaking)
-@export var hunger_decrease_rate: float = 15.0  # Hunger lost per minute
-@export var thirst_decrease_rate: float = 30.0  # Thirst lost per minute (faster than hunger)
-@export var health_decrease_rate: float = 5.0  # Health lost per minute when starving
+@export var hunger_decrease_rate: float = 0.5  # Hunger lost per second (30 per minute)
+@export var thirst_decrease_rate: float = 1.0  # Thirst lost per second (60 per minute) 
+@export var health_decrease_rate: float = 1.0  # Health lost per second when starving (60 per minute)
 @export var auto_eat_threshold: float = 30.0  # Auto-eat when hunger drops below this
 @export var pumpkin_hunger_restore: float = 25.0  # How much hunger pumpkins restore
 @export var water_thirst_restore: float = 40.0  # How much thirst water restores (when implemented)
 
-@export var base_tiredness_rate: float = 3.0  # Base tiredness lost per minute
-@export var walking_tiredness_rate: float = 0.3  # Tiredness lost per second while moving
-@export var night_tiredness_penalty: float = 2.0  # Additional tiredness lost per minute at night without shelter
-@export var tent_recovery_rate: float = 1.0  # Tiredness recovered per second in tent
-@export var tiredness_health_decrease_rate: float = 3.0  # Health lost per minute when exhausted
+@export var base_tiredness_rate: float = 0.2  # Base tiredness lost per second (12 per minute)
+@export var walking_tiredness_rate: float = 0.5  # Tiredness lost per second while moving
+@export var night_tiredness_penalty: float = 0.3  # Additional tiredness lost per second at night without shelter
+@export var tent_recovery_rate: float = 3.0  # Tiredness recovered per second in tent
+@export var tiredness_health_decrease_rate: float = 0.8  # Health lost per second when exhausted
 
 # Component references
 var resource_manager = null
@@ -107,7 +107,7 @@ func handle_hunger_system(delta: float):
 	var was_starving = hunger <= 0.0
 	
 	# Calculate hunger decrease rate with tiredness acceleration
-	var base_rate = hunger_decrease_rate / 60.0  # Convert per-minute to per-second
+	var base_rate = hunger_decrease_rate  # Already per-second
 	var tiredness_multiplier = calculate_tiredness_acceleration()
 	var actual_hunger_rate = base_rate * tiredness_multiplier
 	
@@ -140,7 +140,7 @@ func handle_hunger_system(delta: float):
 	# If hunger reaches 0, start losing health
 	if hunger <= 0.0:
 		var damage_multiplier = calculate_survival_crisis_multiplier()
-		take_damage((health_decrease_rate / 60.0) * damage_multiplier * delta)
+		take_damage(health_decrease_rate * damage_multiplier * delta)
 		if health_log_timer <= 0.0:
 			var crisis_text = " (CRISIS!)" if damage_multiplier > 1.5 else ""
 			print("Player ", get_player_id(), " is starving! Health: ", int(health), crisis_text)
@@ -151,7 +151,7 @@ func handle_thirst_system(delta: float):
 	var was_dehydrated = thirst <= 0.0
 	
 	# Calculate thirst decrease rate with tiredness acceleration
-	var base_rate = thirst_decrease_rate / 60.0  # Convert per-minute to per-second
+	var base_rate = thirst_decrease_rate  # Already per-second
 	var tiredness_multiplier = calculate_tiredness_acceleration()
 	var actual_thirst_rate = base_rate * tiredness_multiplier
 	
@@ -178,7 +178,7 @@ func handle_thirst_system(delta: float):
 	# If thirst reaches 0, start losing health (dehydration is dangerous!)
 	if thirst <= 0.0:
 		var damage_multiplier = calculate_survival_crisis_multiplier()
-		take_damage((health_decrease_rate / 60.0) * damage_multiplier * delta)
+		take_damage(health_decrease_rate * damage_multiplier * delta)
 		if health_log_timer <= 0.0:
 			var crisis_text = " (CRISIS!)" if damage_multiplier > 1.5 else ""
 			print("Player ", get_player_id(), " is dehydrated! Health: ", int(health), crisis_text)
@@ -189,7 +189,7 @@ func handle_tiredness_system(delta: float):
 	var was_exhausted = tiredness <= 0.0
 	
 	# Base tiredness decrease over time
-	tiredness -= (base_tiredness_rate / 60.0) * delta
+	tiredness -= base_tiredness_rate * delta
 	
 	# Additional tiredness from walking/moving
 	if is_player_moving:
@@ -197,11 +197,11 @@ func handle_tiredness_system(delta: float):
 	
 	# Apply night tiredness penalty if not in shelter
 	if is_night_time and not is_in_shelter:
-		tiredness -= (night_tiredness_penalty / 60.0) * delta
+		tiredness -= night_tiredness_penalty * delta
 	
 	# Recover tiredness if in shelter
 	if is_in_shelter:
-		tiredness += (tent_recovery_rate / 1.0) * delta
+		tiredness += tent_recovery_rate * delta
 	
 	# Clamp tiredness to valid range
 	tiredness = clamp(tiredness, 0.0, max_tiredness)
@@ -224,7 +224,7 @@ func handle_tiredness_system(delta: float):
 	# If tiredness reaches 0, start losing health
 	if tiredness <= 0.0:
 		var damage_multiplier = calculate_survival_crisis_multiplier()
-		take_damage((tiredness_health_decrease_rate / 60.0) * damage_multiplier * delta)
+		take_damage(tiredness_health_decrease_rate * damage_multiplier * delta)
 		if health_log_timer <= 0.0:
 			var crisis_text = " (CRISIS!)" if damage_multiplier > 1.5 else ""
 			print("Player ", get_player_id(), " is exhausted! Health: ", int(health), crisis_text)
@@ -452,7 +452,7 @@ func apply_day_recovery() -> void:
 func apply_shelter_recovery(delta: float) -> void:
 	"""Apply shelter recovery - called when in shelter"""
 	if is_in_shelter:
-		tiredness += (tent_recovery_rate / 60.0) * delta
+		tiredness += tent_recovery_rate * delta
 		tiredness = min(tiredness, max_tiredness)
 
 func enter_shelter(shelter: Node3D) -> void:

@@ -1,7 +1,7 @@
 extends Node3D
 
 @export var wood_yield: int = 5
-@export var gather_time: float = 2.0
+@export var gather_time: float = 10.0
 @export var wood_pile_scene: PackedScene = preload("res://models/kenney-survival-kit/resource_wood.tscn")
 
 var players_in_range: Array[Node] = []
