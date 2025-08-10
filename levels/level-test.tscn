@@ -28,7 +28,6 @@ environment = SubResource("Environment_brxo2")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -0.159364, 0.98722, 0, -0.98722, -0.159364, 0, 5.82034, 0)
-light_energy = 0.5
 shadow_enabled = true
 
 [node name="ground" type="MeshInstance3D" parent="."]
@@ -38,7 +37,7 @@ mesh = SubResource("PlaneMesh_voxel")
 transform = Transform3D(1, 0, 0, 0, 0.573577, 0.819152, 0, -0.819152, 0.573577, 0, 50, 30)
 projection = 1
 fov = 40.0
-size = 53.893
+size = 44.919
 far = 100.0
 
 [node name="Player0" parent="." instance=ExtResource("1_voxel")]

@@ -1,7 +1,14 @@
 # Metropolis - TODO List
 
-## 🎯 Current Status: Movement Component Ready!
+## 🎯 Current Status: Survival Component Complete!
 **Date:** August 10, 2025  
+**Progress:** ✅ Steps 1-3 complete (Foundation, Movement, Survival)  
+**Ready for:** Step 4 - Builder Component extraction  
+**See:** `/docs/step3-survival-complete.md` for completion summary
+
+## ✅ Completed Features
+  - [ ] Migrate building mode, ghost preview, construction logic
+  - [ ] Test building system independently:** August 10, 2025  
 **Progress:** ✅ Step 1 complete, ✅ Step 2 component created (80%)  
 **Ready for:** Movement component integration testing  
 **See:** `/docs/step2-movement-progress.md` for detailed progress
