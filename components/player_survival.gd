@@ -18,8 +18,8 @@ var is_in_shelter: bool = false
 var current_shelter: Node3D = null
 
 # Survival configuration (export for easy tweaking)
-@export var hunger_decrease_rate: float = 2.0  # Hunger lost per minute
-@export var thirst_decrease_rate: float = 3.0  # Thirst lost per minute (faster than hunger)
+@export var hunger_decrease_rate: float = 15.0  # Hunger lost per minute
+@export var thirst_decrease_rate: float = 30.0  # Thirst lost per minute (faster than hunger)
 @export var health_decrease_rate: float = 5.0  # Health lost per minute when starving
 @export var auto_eat_threshold: float = 30.0  # Auto-eat when hunger drops below this
 @export var pumpkin_hunger_restore: float = 25.0  # How much hunger pumpkins restore
