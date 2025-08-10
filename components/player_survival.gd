@@ -101,8 +101,13 @@ func handle_hunger_system(delta: float):
 	"""Process hunger decrease and auto-eating"""
 	var was_starving = hunger <= 0.0
 	
-	# Decrease hunger over time (convert rate from per-minute to per-second)
-	hunger -= (hunger_decrease_rate / 60.0) * delta
+	# Calculate hunger decrease rate with tiredness acceleration
+	var base_rate = hunger_decrease_rate / 60.0  # Convert per-minute to per-second
+	var tiredness_multiplier = calculate_tiredness_acceleration()
+	var actual_hunger_rate = base_rate * tiredness_multiplier
+	
+	# Decrease hunger over time
+	hunger -= actual_hunger_rate * delta
 	hunger = max(hunger, 0.0)
 	
 	# Check for starvation state changes
@@ -115,7 +120,11 @@ func handle_hunger_system(delta: float):
 	# Log hunger status occasionally
 	if hunger_log_timer <= 0.0:
 		var current_food = resource_manager.get_resource_amount("food") if resource_manager else 0
-		print("Player ", get_player_id(), " - Hunger: ", int(hunger), "/", int(max_hunger), " Food: ", current_food)
+		var tiredness_mult = calculate_tiredness_acceleration()
+		var status_text = ""
+		if tiredness_mult > 1.1:  # Show when acceleration is significant
+			status_text = " (Tired: " + str(round(tiredness_mult * 100)) + "% rate)"
+		print("Player ", get_player_id(), " - Hunger: ", int(hunger), "/", int(max_hunger), " Food: ", current_food, status_text)
 		hunger_log_timer = 5.0  # Log every 5 seconds
 	
 	# Auto-eat if hunger is low and we have food
@@ -134,8 +143,13 @@ func handle_thirst_system(delta: float):
 	"""Process thirst decrease - similar to hunger but no auto-drink yet"""
 	var was_dehydrated = thirst <= 0.0
 	
-	# Decrease thirst over time (convert rate from per-minute to per-second)
-	thirst -= (thirst_decrease_rate / 60.0) * delta
+	# Calculate thirst decrease rate with tiredness acceleration
+	var base_rate = thirst_decrease_rate / 60.0  # Convert per-minute to per-second
+	var tiredness_multiplier = calculate_tiredness_acceleration()
+	var actual_thirst_rate = base_rate * tiredness_multiplier
+	
+	# Decrease thirst over time
+	thirst -= actual_thirst_rate * delta
 	thirst = max(thirst, 0.0)
 	
 	# Check for dehydration state changes
@@ -147,7 +161,11 @@ func handle_thirst_system(delta: float):
 	
 	# Log thirst status occasionally
 	if thirst_log_timer <= 0.0:
-		print("Player ", get_player_id(), " - Thirst: ", int(thirst), "/", int(max_thirst))
+		var tiredness_mult = calculate_tiredness_acceleration()
+		var status_text = ""
+		if tiredness_mult > 1.1:  # Show when acceleration is significant
+			status_text = " (Tired: " + str(round(tiredness_mult * 100)) + "% rate)"
+		print("Player ", get_player_id(), " - Thirst: ", int(thirst), "/", int(max_thirst), status_text)
 		thirst_log_timer = 5.0  # Log every 5 seconds
 	
 	# If thirst reaches 0, start losing health (dehydration is dangerous!)
@@ -207,6 +225,20 @@ func update_log_timers(delta: float):
 	thirst_log_timer = max(thirst_log_timer - delta, 0.0)
 	tiredness_log_timer = max(tiredness_log_timer - delta, 0.0)
 	health_log_timer = max(health_log_timer - delta, 0.0)
+
+func calculate_tiredness_acceleration() -> float:
+	"""Calculate acceleration multiplier for hunger and thirst based on tiredness"""
+	# When tiredness is high (well-rested), multiplier is 1.0 (normal rate)
+	# When tiredness is low (tired), multiplier increases up to 2.0 (double rate)
+	var tiredness_percentage = get_tiredness_percentage()
+	
+	# Inverse relationship: lower tiredness = higher acceleration
+	# At 100% tiredness: 1.0x multiplier (normal)
+	# At 50% tiredness: 1.5x multiplier 
+	# At 0% tiredness: 2.0x multiplier (exhausted, double consumption)
+	var acceleration_multiplier = 1.0 + (1.0 - tiredness_percentage)
+	
+	return acceleration_multiplier
 
 func consume_food() -> bool:
 	"""Consume food to restore hunger"""
