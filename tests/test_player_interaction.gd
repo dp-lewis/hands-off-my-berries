@@ -1,9 +1,10 @@
-extends GdUnitTestSuite
+extends GutTest
 
 # PlayerInteraction Component Test Suite
 # Tests object proximity tracking, gathering mechanics, and shelter interactions
 
-var player_interaction: PlayerInteraction
+const PlayerInteraction = preload("res://scenes/players/components/player_interaction.gd")
+var player_interaction
 var mock_player_controller
 var mock_movement_component
 var mock_survival_component
