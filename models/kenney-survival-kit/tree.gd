@@ -2,6 +2,7 @@ extends Node3D
 
 @export var wood_yield: int = 5
 @export var gather_time: float = 10.0
+@export var chopping_tiredness_rate: float = 0.5  # Tiredness lost per second while chopping
 @export var wood_pile_scene: PackedScene = preload("res://models/kenney-survival-kit/resource_wood.tscn")
 
 var players_in_range: Array[Node] = []
@@ -27,6 +28,12 @@ func _process(delta):
 	if is_being_gathered and current_gatherer:
 		# Update gathering progress
 		gather_progress += delta / gather_time
+		
+		# Apply continuous tiredness drain to the chopper
+		if current_gatherer.has_method("get_node"):
+			var survival_component = current_gatherer.get_node_or_null("Survival")
+			if survival_component and survival_component.has_method("lose_tiredness"):
+				survival_component.lose_tiredness(chopping_tiredness_rate * delta, "chopping tree")
 		
 		# Update visual state based on progress
 		update_chopping_visuals()
@@ -58,24 +65,24 @@ func start_gathering(player: Node) -> bool:
 	# No longer check inventory space - allow chopping regardless
 	current_gatherer = player
 	is_being_gathered = true
-	gather_progress = 0.0
+	# Don't reset gather_progress - keep existing progress!
 	
-	# Create progress bar
+	# Create progress bar and restore visual state
 	create_progress_bar()
+	update_chopping_visuals()  # Update visuals to match current progress
 	
-	print("Started chopping tree (wood will be left as collectible)...")
+	print("Started chopping tree (progress: ", int(gather_progress * 100), "%)...")
 	return true
 
 func stop_gathering():
 	if is_being_gathered:
 		current_gatherer = null
 		is_being_gathered = false
-		gather_progress = 0.0
+		# Don't reset gather_progress - keep the tree partially chopped!
 		
-		# Reset visual state and remove progress bar
-		reset_tree_visuals()
+		# Remove progress bar but keep visual state
 		destroy_progress_bar()
-		print("Stopped gathering tree")
+		print("Stopped gathering tree (progress: ", int(gather_progress * 100), "% - will resume from here)")
 
 func update_chopping_visuals():
 	if not tree_mesh:

@@ -174,9 +174,7 @@ func start_gathering_tree():
 			if player_movement:
 				player_movement.play_animation("gather")
 			
-			# Apply tiredness cost via survival component
-			if player_survival:
-				player_survival.lose_tiredness(tree_chopping_tiredness_cost, "chopping tree")
+			# No tiredness cost here - tree will apply continuous drain
 			
 			gathering_started.emit("tree", nearby_tree)
 			print("Player ", player_controller.player_id, " started chopping tree")
