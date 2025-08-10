@@ -7,6 +7,8 @@ var health: float = 100.0
 var max_health: float = 100.0
 var hunger: float = 100.0
 var max_hunger: float = 100.0
+var thirst: float = 100.0
+var max_thirst: float = 100.0
 var tiredness: float = 100.0
 var max_tiredness: float = 100.0
 
@@ -17,9 +19,11 @@ var current_shelter: Node3D = null
 
 # Survival configuration (export for easy tweaking)
 @export var hunger_decrease_rate: float = 2.0  # Hunger lost per minute
+@export var thirst_decrease_rate: float = 3.0  # Thirst lost per minute (faster than hunger)
 @export var health_decrease_rate: float = 5.0  # Health lost per minute when starving
 @export var auto_eat_threshold: float = 30.0  # Auto-eat when hunger drops below this
 @export var pumpkin_hunger_restore: float = 25.0  # How much hunger pumpkins restore
+@export var water_thirst_restore: float = 40.0  # How much thirst water restores (when implemented)
 
 @export var base_tiredness_rate: float = 3.0  # Base tiredness lost per minute
 @export var walking_tiredness_rate: float = 0.3  # Tiredness lost per second while moving
@@ -33,6 +37,7 @@ var is_player_moving: bool = false
 
 # Logging timers (to avoid spam)
 var hunger_log_timer: float = 0.0
+var thirst_log_timer: float = 0.0
 var tiredness_log_timer: float = 0.0
 var health_log_timer: float = 0.0
 
@@ -88,6 +93,7 @@ func _on_movement_stopped():
 func process_survival(delta: float) -> void:
 	"""Main survival processing - call this every frame"""
 	handle_hunger_system(delta)
+	handle_thirst_system(delta)
 	handle_tiredness_system(delta)
 	update_log_timers(delta)
 
@@ -123,6 +129,33 @@ func handle_hunger_system(delta: float):
 		if health_log_timer <= 0.0:
 			print("Player ", get_player_id(), " is starving! Health: ", int(health))
 			health_log_timer = 3.0  # Log every 3 seconds when starving
+
+func handle_thirst_system(delta: float):
+	"""Process thirst decrease - similar to hunger but no auto-drink yet"""
+	var was_dehydrated = thirst <= 0.0
+	
+	# Decrease thirst over time (convert rate from per-minute to per-second)
+	thirst -= (thirst_decrease_rate / 60.0) * delta
+	thirst = max(thirst, 0.0)
+	
+	# Check for dehydration state changes
+	var is_dehydrated_now = thirst <= 0.0
+	if is_dehydrated_now and not was_dehydrated:
+		started_dehydration.emit()
+	elif not is_dehydrated_now and was_dehydrated:
+		stopped_dehydration.emit()
+	
+	# Log thirst status occasionally
+	if thirst_log_timer <= 0.0:
+		print("Player ", get_player_id(), " - Thirst: ", int(thirst), "/", int(max_thirst))
+		thirst_log_timer = 5.0  # Log every 5 seconds
+	
+	# If thirst reaches 0, start losing health (dehydration is dangerous!)
+	if thirst <= 0.0:
+		take_damage((health_decrease_rate / 60.0) * delta)
+		if health_log_timer <= 0.0:
+			print("Player ", get_player_id(), " is dehydrated! Health: ", int(health))
+			health_log_timer = 3.0  # Log every 3 seconds when dehydrated
 
 func handle_tiredness_system(delta: float):
 	"""Process tiredness changes based on activity and environment"""
@@ -171,6 +204,7 @@ func handle_tiredness_system(delta: float):
 func update_log_timers(delta: float):
 	"""Update logging timers to prevent spam"""
 	hunger_log_timer = max(hunger_log_timer - delta, 0.0)
+	thirst_log_timer = max(thirst_log_timer - delta, 0.0)
 	tiredness_log_timer = max(tiredness_log_timer - delta, 0.0)
 	health_log_timer = max(health_log_timer - delta, 0.0)
 
@@ -219,6 +253,7 @@ func respawn_player():
 	"""Respawn the player with full health"""
 	health = max_health
 	hunger = max_hunger
+	thirst = max_thirst
 	tiredness = max_tiredness
 	
 	# Reset player position through controller
@@ -228,6 +263,7 @@ func respawn_player():
 	print("Player ", get_player_id(), " has respawned")
 	health_changed.emit(health, max_health)
 	hunger_changed.emit(hunger, max_hunger)
+	thirst_changed.emit(thirst, max_thirst)
 	tiredness_changed.emit(tiredness, max_tiredness)
 
 # Night and Day System
@@ -293,6 +329,15 @@ func get_hunger_percentage() -> float:
 func get_max_hunger() -> float:
 	return max_hunger
 
+func get_thirst() -> float:
+	return thirst
+
+func get_thirst_percentage() -> float:
+	return thirst / max_thirst if max_thirst > 0 else 0.0
+
+func get_max_thirst() -> float:
+	return max_thirst
+
 func get_tiredness() -> float:
 	return tiredness
 
@@ -311,6 +356,9 @@ func get_current_shelter() -> Node3D:
 func is_starving() -> bool:
 	return hunger <= 0.0
 
+func is_dehydrated() -> bool:
+	return thirst <= 0.0
+
 func is_exhausted() -> bool:
 	return tiredness <= 0.0
 
@@ -320,6 +368,7 @@ func is_critical_health() -> bool:
 # Signals for UI and other components
 signal health_changed(new_health: float, max_health: float)
 signal hunger_changed(new_hunger: float, max_hunger: float)
+signal thirst_changed(new_thirst: float, max_thirst: float)
 signal tiredness_changed(new_tiredness: float, max_tiredness: float)
 signal player_died
 signal shelter_entered(shelter: Node3D)
@@ -328,6 +377,8 @@ signal shelter_exited(shelter: Node3D)
 # Status change signals
 signal started_starving
 signal stopped_starving
+signal started_dehydration
+signal stopped_dehydration
 signal started_exhaustion
 signal stopped_exhaustion
 signal critical_health_warning

@@ -5,6 +5,7 @@ class_name ModularPlayerUI
 var player_label: Label
 var health_display: Control
 var hunger_display: Control
+var thirst_display: Control
 var tiredness_display: Control
 var resource_container: VBoxContainer
 
@@ -33,6 +34,10 @@ func setup_ui_structure():
 	# Hunger display  
 	hunger_display = create_stat_display("🍗", "Hunger")
 	main_vbox.add_child(hunger_display)
+	
+	# Thirst display
+	thirst_display = create_stat_display("💧", "Thirst")
+	main_vbox.add_child(thirst_display)
 	
 	# Tiredness display
 	tiredness_display = create_stat_display("😴", "Tiredness")
@@ -141,6 +146,13 @@ func update_stat_displays():
 		var progress_bar = hunger_display.get_meta("progress_bar")
 		if progress_bar:
 			progress_bar.value = (target_player.hunger / target_player.max_hunger) * 100
+			update_stat_color(progress_bar, progress_bar.value)
+	
+	# Update thirst
+	if thirst_display:
+		var progress_bar = thirst_display.get_meta("progress_bar")
+		if progress_bar:
+			progress_bar.value = target_player.get_thirst_percentage() * 100
 			update_stat_color(progress_bar, progress_bar.value)
 	
 	# Update tiredness

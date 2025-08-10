@@ -5,6 +5,7 @@ class_name PlayerUI
 var player_label: Label
 var health_bar: ProgressBar
 var hunger_bar: ProgressBar
+var thirst_bar: ProgressBar
 var tiredness_bar: ProgressBar
 var wood_label: Label
 var food_label: Label
@@ -27,6 +28,7 @@ func _ready():
 	print("UI Debug - player_label: ", player_label)
 	print("UI Debug - health_bar: ", health_bar)
 	print("UI Debug - hunger_bar: ", hunger_bar)
+	print("UI Debug - thirst_bar: ", thirst_bar)
 	print("UI Debug - tiredness_bar: ", tiredness_bar)
 	print("UI Debug - wood_label: ", wood_label)
 	print("UI Debug - food_label: ", food_label)
@@ -35,6 +37,7 @@ func get_node_references():
 	player_label = $VBoxContainer/PlayerLabel
 	health_bar = $VBoxContainer/HealthContainer/HealthBar
 	hunger_bar = $VBoxContainer/HungerContainer/HungerBar
+	thirst_bar = $VBoxContainer/ThirstContainer/ThirstBar
 	tiredness_bar = $VBoxContainer/TirednessContainer/TirednessBar
 	wood_label = $VBoxContainer/InventoryContainer/WoodLabel
 	food_label = $VBoxContainer/InventoryContainer/FoodLabel
@@ -116,6 +119,10 @@ func update_non_resource_ui_values():
 	if hunger_bar:
 		hunger_bar.value = (target_player.hunger / target_player.max_hunger) * 100
 	
+	# Update thirst bar
+	if thirst_bar:
+		thirst_bar.value = target_player.get_thirst_percentage() * 100
+	
 	# Update tiredness bar
 	if tiredness_bar:
 		tiredness_bar.value = target_player.get_tiredness_percentage() * 100
@@ -135,6 +142,10 @@ func update_ui_values():
 	# Update hunger bar  
 	if hunger_bar:
 		hunger_bar.value = (target_player.hunger / target_player.max_hunger) * 100
+	
+	# Update thirst bar
+	if thirst_bar:
+		thirst_bar.value = target_player.get_thirst_percentage() * 100
 	
 	# Update tiredness bar
 	if tiredness_bar:
@@ -169,6 +180,15 @@ func update_bar_colors():
 			hunger_bar.modulate = Color.ORANGE
 		else:
 			hunger_bar.modulate = Color.RED
+	
+	# Thirst bar colors
+	if thirst_bar:
+		if thirst_bar.value > 66:
+			thirst_bar.modulate = Color.BLUE
+		elif thirst_bar.value > 33:
+			thirst_bar.modulate = Color.YELLOW
+		else:
+			thirst_bar.modulate = Color.RED
 	
 	# Tiredness bar colors
 	if tiredness_bar:

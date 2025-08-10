@@ -316,6 +316,16 @@ func get_hunger_percentage() -> float:
 		return player_survival.get_hunger_percentage()
 	return 1.0
 
+func get_thirst() -> float:
+	if player_survival:
+		return player_survival.get_thirst()
+	return 100.0
+
+func get_thirst_percentage() -> float:
+	if player_survival:
+		return player_survival.get_thirst_percentage()
+	return 1.0
+
 func get_tiredness() -> float:
 	if player_survival:
 		return player_survival.get_tiredness()
