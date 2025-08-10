@@ -9,6 +9,7 @@ extends "res://components/player_component.gd"
 
 # Internal state
 var movement_enabled: bool = true
+var animation_enabled: bool = true
 var character_model: Node3D = null
 var animation_player: AnimationPlayer = null
 var current_velocity: Vector3 = Vector3.ZERO
@@ -120,7 +121,7 @@ func handle_movement(input_dir: Vector2, delta: float) -> void:
 
 func update_animation(velocity: Vector3) -> void:
 	"""Update character animation based on velocity"""
-	if not animation_player:
+	if not animation_player or not animation_enabled:
 		return
 	
 	var new_animation = "idle"
@@ -135,7 +136,7 @@ func update_animation(velocity: Vector3) -> void:
 
 func play_animation(anim_name: String) -> void:
 	"""Play specific animation if available"""
-	if not animation_player:
+	if not animation_player or not animation_enabled:
 		return
 	
 	# Try common animation names based on the requested type
@@ -147,6 +148,8 @@ func play_animation(anim_name: String) -> void:
 			animation_names = ["idle", "stand", "standing", "rest"]
 		"gather":
 			animation_names = ["attack_melee_left", "gather", "gathering", "chop", "chopping", "work", "working", "action"]
+		"death", "die":
+			animation_names = ["death", "die", "dying", "dead", "fall", "collapse"]
 	
 	# Try to find and play a matching animation
 	var available_animations = animation_player.get_animation_list()
@@ -159,6 +162,32 @@ func play_animation(anim_name: String) -> void:
 	# If no specific animation found, log available animations for debugging
 	if available_animations.size() > 0:
 		print("PlayerMovement: Available animations: ", available_animations)
+
+func play_death_animation() -> void:
+	"""Play death animation when player dies"""
+	if not animation_player:
+		print("PlayerMovement: Cannot play death animation - no AnimationPlayer found")
+		return
+	
+	print("PlayerMovement: Playing death animation for player ", get_player_id())
+	
+	# Disable automatic animation updates to prevent idle animation from overriding death
+	animation_enabled = false
+	
+	# Force play the death animation (bypass animation_enabled check)
+	var death_animation_names = ["death", "die", "dying", "dead", "fall", "collapse"]
+	var available_animations = animation_player.get_animation_list()
+	
+	for candidate in death_animation_names:
+		if candidate in available_animations:
+			animation_player.play(candidate)
+			print("PlayerMovement: Playing death animation: ", candidate)
+			break
+	
+	# Stop movement immediately
+	current_velocity = Vector3.ZERO
+	if character_body:
+		character_body.velocity = Vector3.ZERO
 
 func rotate_character_to_direction(input_dir: Vector2, delta: float) -> void:
 	"""Rotate character model to face movement direction"""
@@ -178,6 +207,11 @@ func set_movement_enabled(enabled: bool) -> void:
 		current_velocity = Vector3.ZERO
 		if character_body:
 			character_body.velocity = Vector3.ZERO
+		# Note: Don't disable animations here - death animation needs to play
+
+func set_animation_enabled(enabled: bool) -> void:
+	"""Enable or disable automatic animation updates"""
+	animation_enabled = enabled
 
 # Signals for movement events
 signal movement_started  # Emitted when player starts moving (for stopping gathering, etc.)

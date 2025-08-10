@@ -16,10 +16,11 @@ var nearby_tent: Node3D = null
 var nearby_shelter: Node3D = null  # For tent shelter interaction
 var nearby_pumpkin: Node3D = null  # For pumpkin gathering
 
-# Interaction state
+# Internal state
 var is_gathering: bool = false
 var current_gathering_object: Node3D = null
 var gathering_type: String = ""
+var interaction_enabled: bool = true  # Control whether interactions are allowed
 
 # Shelter state
 var is_in_shelter: bool = false
@@ -67,12 +68,20 @@ func _on_cleanup():
 
 # Handle interaction input from PlayerController
 func handle_interaction_input(action_pressed: bool, action_released: bool):
+	# Don't process interactions if disabled (e.g., player is dead)
+	if not interaction_enabled:
+		return
+		
 	if action_pressed:
 		_handle_interaction_pressed()
 	elif action_released:
 		_handle_interaction_released()
 
 func _handle_interaction_pressed():
+	# Don't process interactions if disabled
+	if not interaction_enabled:
+		return
+		
 	# Priority order for interactions:
 	# 1. Tree gathering (if not already gathering)
 	# 2. Tent building
