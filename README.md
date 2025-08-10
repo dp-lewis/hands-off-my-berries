@@ -83,7 +83,17 @@ metropolis/
     └── resource_config.gd      # Resource system configuration
 ```
 
-## 🛠️ Built With
+## � Documentation
+
+Comprehensive documentation is organized in the `/docs` directory:
+
+- **[📖 Documentation Overview](docs/README.md)** - Complete docs navigation
+- **[🏗️ Architecture Guide](docs/refactoring/player-refactoring-quick-reference.md)** - Component system reference
+- **[🧪 Testing Guide](docs/testing/TESTING_QUICK_REFERENCE.md)** - Test commands and procedures  
+- **[🎮 Game Design](docs/design/GAME_DESIGN_DOCUMENT.md)** - Core mechanics and design
+- **[⚙️ Game Systems](docs/game-systems/)** - Individual system documentation
+
+## �🛠️ Built With
 - **Godot Engine 4.4+** - Game engine
 - **GUT Framework** - Testing infrastructure
 - **GDScript** - Primary programming language
