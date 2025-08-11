@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://woxo7m8qhipo"]
+[gd_scene load_steps=15 format=3 uid="uid://woxo7m8qhipo"]
 
 [ext_resource type="Script" uid="uid://cjodfbct1ml6h" path="res://systems/simple_game_manager.gd" id="1_onwf1"]
 [ext_resource type="PackedScene" uid="uid://dhycgw31gv2xr" path="res://scenes/players/player.tscn" id="1_voxel"]
@@ -9,6 +9,8 @@
 [ext_resource type="PackedScene" uid="uid://cw72ssrptg1wb" path="res://models/kenney-survival-kit/rock_a.tscn" id="6_sol08"]
 [ext_resource type="PackedScene" uid="uid://c5gykgajyqii4" path="res://models/kenney-survival-kit/rock_b.tscn" id="7_png10"]
 [ext_resource type="PackedScene" uid="uid://cdtjegbot0vby" path="res://models/kenney-survival-kit/rock_c.tscn" id="8_xofuj"]
+[ext_resource type="Script" uid="uid://sru7o38qa2yp" path="res://systems/simple_fog_of_war.gd" id="9_simple_fog"]
+[ext_resource type="Script" uid="uid://cwb1iohgm6hqq" path="res://systems/simple_fog_demo.gd" id="10_simple_fog_demo"]
 
 [sub_resource type="Environment" id="Environment_brxo2"]
 ambient_light_sky_contribution = 0.98
@@ -92,6 +94,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 3)
 
 [node name="water2" parent="." instance=ExtResource("5_water")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.4701, 0, -15.9634)
+visible = false
 
 [node name="rock-a2" parent="." instance=ExtResource("6_sol08")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.9855, 0, -2.35383)
@@ -101,3 +104,20 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24.5475, 0, 2.58771)
 
 [node name="rock-c2" parent="." instance=ExtResource("8_xofuj")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.0786, 0, 1.75023)
+
+[node name="UI" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="SimpleFogOfWar" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("9_simple_fog")
+reveal_radius = 140.0
+
+[node name="SimpleFogDemo" type="Node" parent="."]
+script = ExtResource("10_simple_fog_demo")
