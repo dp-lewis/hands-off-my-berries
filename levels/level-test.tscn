@@ -6,9 +6,9 @@
 [ext_resource type="Script" path="res://systems/tree_spawner.gd" id="3_tree_spawner"]
 [ext_resource type="PackedScene" uid="uid://cs05wsnjh4clr" path="res://models/kenney_nature-kit/crop_pumpkin.tscn" id="4_53nj4"]
 [ext_resource type="PackedScene" uid="uid://cjdyrlh8hqxh6" path="res://models/placeholder/water.tscn" id="5_water"]
-[ext_resource type="PackedScene" path="res://models/kenney-survival-kit/rock_a.tscn" id="6_sol08"]
-[ext_resource type="PackedScene" path="res://models/kenney-survival-kit/rock_b.tscn" id="7_png10"]
-[ext_resource type="PackedScene" path="res://models/kenney-survival-kit/rock_c.tscn" id="8_xofuj"]
+[ext_resource type="PackedScene" uid="uid://cw72ssrptg1wb" path="res://models/kenney-survival-kit/rock_a.tscn" id="6_sol08"]
+[ext_resource type="PackedScene" uid="uid://c5gykgajyqii4" path="res://models/kenney-survival-kit/rock_b.tscn" id="7_png10"]
+[ext_resource type="PackedScene" uid="uid://cdtjegbot0vby" path="res://models/kenney-survival-kit/rock_c.tscn" id="8_xofuj"]
 
 [sub_resource type="Environment" id="Environment_brxo2"]
 ambient_light_sky_contribution = 0.98
