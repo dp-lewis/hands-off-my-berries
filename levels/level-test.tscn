@@ -1,8 +1,9 @@
-[gd_scene load_steps=12 format=3 uid="uid://woxo7m8qhipo"]
+[gd_scene load_steps=13 format=3 uid="uid://woxo7m8qhipo"]
 
 [ext_resource type="Script" uid="uid://cjodfbct1ml6h" path="res://systems/simple_game_manager.gd" id="1_onwf1"]
 [ext_resource type="PackedScene" uid="uid://dhycgw31gv2xr" path="res://scenes/players/player.tscn" id="1_voxel"]
 [ext_resource type="PackedScene" uid="uid://b8b3dbuxtoblb" path="res://models/kenney-survival-kit/tree.tscn" id="2_awkes"]
+[ext_resource type="Script" uid="uid://bvulwe6djluba" path="res://systems/tree_spawner.gd" id="3_tree_spawner"]
 [ext_resource type="PackedScene" uid="uid://cs05wsnjh4clr" path="res://models/kenney_nature-kit/crop_pumpkin.tscn" id="4_53nj4"]
 [ext_resource type="PackedScene" uid="uid://cjdyrlh8hqxh6" path="res://models/placeholder/water.tscn" id="5_water"]
 [ext_resource type="PackedScene" uid="uid://cw72ssrptg1wb" path="res://models/kenney-survival-kit/rock_a.tscn" id="6_sol08"]
@@ -41,7 +42,7 @@ mesh = SubResource("PlaneMesh_voxel")
 transform = Transform3D(1, 0, 0, 0, 0.573577, 0.819152, 0, -0.819152, 0.573577, 0, 50, 30)
 projection = 1
 fov = 40.0
-size = 44.919
+size = 50.0
 far = 100.0
 
 [node name="Player0" parent="." instance=ExtResource("1_voxel")]
@@ -50,7 +51,20 @@ far = 100.0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.0268, 0, 0)
 player_id = 1
 
+[node name="TreeSpawner" type="Node3D" parent="."]
+script = ExtResource("3_tree_spawner")
+tree_scene = ExtResource("2_awkes")
+area_size = Vector2(100, 75)
+tree_count = 500
+min_distance = 0.5
+player_clearing_radius = 5.0
+additional_clearings = Array[Vector3]([Vector3(-8, 0, 3), Vector3(21.5, 0, -16)])
+clearing_radius = 3.0
+noise_scale = 0.1
+cluster_density = 0.1
+
 [node name="Trees" type="Node3D" parent="."]
+visible = false
 
 [node name="tree2" parent="Trees" instance=ExtResource("2_awkes")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.46687, 0, -0.231797)

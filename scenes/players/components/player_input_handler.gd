@@ -42,10 +42,10 @@ func setup_input_mappings():
 	# Movement mappings
 	movement_actions = {
 		0: {
-			"left": "ui_left",
-			"right": "ui_right", 
-			"up": "ui_up",
-			"down": "ui_down"
+			"left": "p1_left",
+			"right": "p1_right", 
+			"up": "p1_up",
+			"down": "p1_down"
 		},
 		1: {
 			"left": "p2_left",
@@ -69,7 +69,7 @@ func setup_input_mappings():
 	
 	# Action key mappings
 	action_keys = {
-		0: "ui_accept",  # Space/Enter for keyboard player
+		0: "p1_action",  # Space/Enter for keyboard player
 		1: "p2_action",
 		2: "p3_action", 
 		3: "p4_action"
@@ -77,7 +77,7 @@ func setup_input_mappings():
 	
 	# Build key mappings
 	build_keys = {
-		0: "ui_focus_next",  # Tab for keyboard player
+		0: "p1_build",  # Tab for keyboard player
 		1: "p2_build",
 		2: "p3_build",
 		3: "p4_build"
