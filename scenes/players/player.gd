@@ -13,6 +13,7 @@ var player_survival # : PlayerSurvival
 var player_builder # : PlayerBuilder
 var player_interaction # : PlayerInteraction
 var player_input_handler # : PlayerInputHandler
+var camera_relative_movement # : CameraRelativeMovement
 
 # Resource Management System (keeping existing integration)
 @onready var resource_manager: ResourceManager = $ResourceManager
@@ -64,12 +65,14 @@ func setup_components():
 	var PlayerBuilderScript = load("res://components/player_builder.gd")
 	var PlayerInteractionScript = load("res://scenes/players/components/player_interaction.gd")
 	var PlayerInputHandlerScript = load("res://scenes/players/components/player_input_handler.gd")
+	var CameraRelativeMovementScript = load("res://components/camera_relative_movement.gd")
 	
 	player_movement = PlayerMovementScript.new()
 	player_survival = PlayerSurvivalScript.new()
 	player_builder = PlayerBuilderScript.new()
 	player_interaction = PlayerInteractionScript.new()
 	player_input_handler = PlayerInputHandlerScript.new()
+	camera_relative_movement = CameraRelativeMovementScript.new()
 	
 	# Add components as children
 	add_child(player_movement)
@@ -77,6 +80,7 @@ func setup_components():
 	add_child(player_builder)
 	add_child(player_interaction)
 	add_child(player_input_handler)
+	add_child(camera_relative_movement)
 	
 	# Initialize components with this controller
 	player_movement.initialize(self)
@@ -84,6 +88,7 @@ func setup_components():
 	player_builder.initialize(self)
 	player_interaction.initialize(self)
 	player_input_handler.initialize(self)
+	# camera_relative_movement doesn't need initialize (it's not a PlayerComponent)
 	
 	# Setup component communication
 	connect_component_signals()
@@ -93,9 +98,14 @@ func setup_components():
 func connect_component_signals():
 	"""Connect signals between components for coordination"""
 	
-	# Input Handler -> Other Components
-	if player_input_handler.has_signal("movement_input") and not player_input_handler.movement_input.is_connected(_on_movement_input):
-		player_input_handler.movement_input.connect(_on_movement_input)
+	# Input Handler -> Camera Relative Movement -> Movement
+	if player_input_handler.has_signal("movement_input") and not player_input_handler.movement_input.is_connected(camera_relative_movement.handle_input_direction):
+		player_input_handler.movement_input.connect(camera_relative_movement.handle_input_direction)
+	
+	# Camera Relative Movement -> Movement Component
+	if camera_relative_movement.has_signal("movement_requested") and not camera_relative_movement.movement_requested.is_connected(_on_world_movement_input):
+		camera_relative_movement.movement_requested.connect(_on_world_movement_input)
+	
 	if player_input_handler.has_signal("action_pressed") and not player_input_handler.action_pressed.is_connected(_on_action_pressed):
 		player_input_handler.action_pressed.connect(_on_action_pressed)
 	if player_input_handler.has_signal("action_released") and not player_input_handler.action_released.is_connected(_on_action_released):
@@ -121,6 +131,8 @@ func connect_component_signals():
 	for component in [player_movement, player_survival, player_builder, player_interaction, player_input_handler]:
 		if component.has_signal("component_error") and not component.component_error.is_connected(_on_component_error):
 			component.component_error.connect(_on_component_error)
+	
+	# Camera relative movement doesn't have component_error signal (it's not a PlayerComponent)
 
 func _physics_process(delta):
 	"""Main update loop coordinating all components"""
@@ -136,10 +148,16 @@ func _physics_process(delta):
 	# Note: Movement physics is handled by PlayerMovement component
 
 # Input event handlers
-func _on_movement_input(direction: Vector2):
-	"""Handle movement input from input handler"""
+func _on_movement_input(_direction: Vector2):
+	"""Handle movement input from input handler (legacy - now unused)"""
+	# This is kept for compatibility but no longer used
+	# Camera-relative movement is now handled by _on_world_movement_input
+	pass
+
+func _on_world_movement_input(world_direction: Vector2):
+	"""Handle world-space movement input from camera-relative movement component"""
 	if player_movement:
-		player_movement.handle_movement(direction, get_physics_process_delta_time())
+		player_movement.handle_world_movement(world_direction, get_physics_process_delta_time())
 
 func _on_action_pressed():
 	"""Handle action button press"""

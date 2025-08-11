@@ -88,23 +88,27 @@ func find_node_by_type(node: Node, node_type) -> Node:
 # Movement Interface Implementation
 
 func handle_movement(input_dir: Vector2, delta: float) -> void:
-	"""Handle player movement based on input direction"""
+	"""Handle player movement based on input direction (legacy method)"""
+	handle_world_movement(input_dir, delta)
+
+func handle_world_movement(world_dir: Vector2, delta: float) -> void:
+	"""Handle player movement based on world-space direction"""
 	if not movement_enabled or not character_body:
 		return
 	
-	if input_dir != Vector2.ZERO:
+	if world_dir != Vector2.ZERO:
 		# Accelerate towards target velocity
-		var target_velocity = Vector3(input_dir.x * speed, 0, input_dir.y * speed)
+		var target_velocity = Vector3(world_dir.x * speed, 0, world_dir.y * speed)
 		current_velocity = current_velocity.move_toward(target_velocity, acceleration * delta)
 		
 		# Rotate character model to face movement direction
-		rotate_character_to_direction(input_dir, delta)
+		rotate_character_to_direction(world_dir, delta)
 		
 		# Trigger walking animation
 		update_animation(current_velocity)
 		
 		# Signal movement started (for stopping gathering, etc.)
-		if input_dir.length() > 0.1:
+		if world_dir.length() > 0.1:
 			movement_started.emit()
 	else:
 		# Apply friction when no input
