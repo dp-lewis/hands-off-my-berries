@@ -32,18 +32,19 @@ script = ExtResource("1_onwf1")
 environment = SubResource("Environment_brxo2")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -0.159364, 0.98722, 0, -0.98722, -0.159364, 0, 5.82034, 0)
+transform = Transform3D(0.935444, 0.296784, -0.191999, 0, 0.543174, 0.83962, 0.353475, -0.785417, 0.508109, 0, 5.82034, 0)
 shadow_enabled = true
+shadow_opacity = 0.59
 
 [node name="ground" type="MeshInstance3D" parent="."]
 mesh = SubResource("PlaneMesh_voxel")
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.573577, 0.819152, 0, -0.819152, 0.573577, 0, 50, 30)
+transform = Transform3D(0.707107, 0.5, -0.5, 0, 0.707107, 0.707107, 0.707107, -0.5, 0.5, 0, 20, 0)
 projection = 1
+current = true
 fov = 40.0
 size = 50.0
-far = 100.0
 
 [node name="Player0" parent="." instance=ExtResource("1_voxel")]
 
