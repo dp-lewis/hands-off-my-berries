@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://cawmv1f1p42g6"]
+
+[ext_resource type="PackedScene" uid="uid://clf02bbds6gdo" path="res://models/kenney-mini-characters/character-female-b.glb" id="1_3hbj0"]
+
+[node name="character-female-b2" instance=ExtResource("1_3hbj0")]

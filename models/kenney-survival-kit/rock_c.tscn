@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://cdtjegbot0vby"]
+
+[ext_resource type="PackedScene" uid="uid://o4jrfyf8p0mg" path="res://models/kenney-survival-kit/rock-c.glb" id="1_t8odv"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_t8odv"]
+radius = 1.11238
+
+[node name="rock-c2" instance=ExtResource("1_t8odv")]
+
+[node name="rock-c" parent="." index="0"]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." index="1"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.255132, 0)
+shape = SubResource("SphereShape3D_t8odv")

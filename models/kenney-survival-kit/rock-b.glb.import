@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://d3lbeh2bjvw7r"
-path="res://.godot/imported/character-female-a.glb-4f67108445cfb606ac284aa9f3f9cdf6.scn"
+uid="uid://bvm2ixwa6r8gq"
+path="res://.godot/imported/rock-b.glb-7a4208c2df1bc31c420988463494e7ca.scn"
 
 [deps]
 
-source_file="res://models/kenney-mini-characters/character-female-a.glb"
-dest_files=["res://.godot/imported/character-female-a.glb-4f67108445cfb606ac284aa9f3f9cdf6.scn"]
+source_file="res://models/kenney-survival-kit/rock-b.glb"
+dest_files=["res://.godot/imported/rock-b.glb-7a4208c2df1bc31c420988463494e7ca.scn"]
 
 [params]
 
