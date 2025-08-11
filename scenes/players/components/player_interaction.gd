@@ -14,7 +14,7 @@ signal interaction_available(interaction_type: String, object: Node3D)
 var nearby_tree: Node3D = null
 var nearby_tent: Node3D = null
 var nearby_shelter: Node3D = null  # For tent shelter interaction
-var nearby_pumpkin: Node3D = null  # For pumpkin gathering
+var nearby_food: Node3D = null  # For food gathering (replaces nearby_pumpkin)
 var nearby_water: Node3D = null  # For water drinking
 
 # Internal state
@@ -30,7 +30,7 @@ var current_shelter: Node3D = null
 # Tiredness costs for interactions (configurable)
 @export var tree_chopping_tiredness_cost: float = 5.0
 @export var building_tiredness_cost: float = 3.0
-@export var pumpkin_gathering_tiredness_cost: float = 2.0
+@export var food_gathering_tiredness_cost: float = 2.0  # Renamed from pumpkin_gathering_tiredness_cost
 
 # Component references
 var player_movement # : PlayerMovement (dynamic typing)
@@ -88,7 +88,7 @@ func _handle_interaction_pressed():
 	print("  - nearby_tree: ", nearby_tree)
 	print("  - nearby_tent: ", nearby_tent) 
 	print("  - nearby_shelter: ", nearby_shelter)
-	print("  - nearby_pumpkin: ", nearby_pumpkin)
+	print("  - nearby_food: ", nearby_food)
 	print("  - nearby_water: ", nearby_water)
 	print("  - is_in_shelter: ", is_in_shelter)
 	print("  - is_gathering: ", is_gathering)
@@ -97,7 +97,7 @@ func _handle_interaction_pressed():
 	# 1. Tree gathering (if not already gathering)
 	# 2. Shelter entry/exit (built tents take priority over building)
 	# 3. Tent building (only if tent is not built)
-	# 4. Pumpkin gathering (if not already gathering)
+	# 4. Food gathering (if not already gathering)
 	# 5. Water drinking (if not already gathering)
 	
 	if nearby_tree and not is_gathering:
@@ -112,9 +112,9 @@ func _handle_interaction_pressed():
 	elif nearby_tent:
 		print("DEBUG: Starting tent building")
 		start_building_tent()
-	elif nearby_pumpkin and not is_gathering:
-		print("DEBUG: Starting pumpkin gathering")
-		start_gathering_pumpkin()
+	elif nearby_food and not is_gathering:
+		print("DEBUG: Starting food gathering")
+		start_gathering_food()
 	elif nearby_water and not is_gathering:
 		print("DEBUG: Starting water drinking")
 		start_drinking_water()
@@ -187,28 +187,37 @@ func start_gathering_tree():
 			return true
 	return false
 
-# Pumpkin interaction methods
-func set_nearby_pumpkin(pumpkin: Node3D):
-	if nearby_pumpkin != pumpkin:
-		nearby_pumpkin = pumpkin
-		nearby_object_changed.emit("pumpkin", pumpkin, true)
-		interaction_available.emit("gather_pumpkin", pumpkin)
-		print("Player ", player_controller.player_id, " near pumpkin")
+# Food interaction methods
+func set_nearby_food(food: Node3D):
+	if nearby_food != food:
+		nearby_food = food
+		var food_type = "food"
+		if food.has_method("get_food_type"):
+			food_type = food.get_food_type()
+		nearby_object_changed.emit(food_type, food, true)
+		interaction_available.emit("gather_" + food_type, food)
+		print("Player ", player_controller.player_id, " near ", food_type)
 
-func clear_nearby_pumpkin(pumpkin: Node3D):
-	if nearby_pumpkin == pumpkin:
-		nearby_pumpkin = null
-		nearby_object_changed.emit("pumpkin", pumpkin, false)
-		if is_gathering and current_gathering_object == pumpkin:
+func clear_nearby_food(food: Node3D):
+	if nearby_food == food:
+		nearby_food = null
+		var food_type = "food"
+		if food.has_method("get_food_type"):
+			food_type = food.get_food_type()
+		nearby_object_changed.emit(food_type, food, false)
+		if is_gathering and current_gathering_object == food:
 			stop_gathering()
-		print("Player ", player_controller.player_id, " left pumpkin area")
+		print("Player ", player_controller.player_id, " left ", food_type, " area")
 
-func start_gathering_pumpkin():
-	if nearby_pumpkin and nearby_pumpkin.has_method("start_gathering"):
-		if nearby_pumpkin.start_gathering(player_controller):
+func start_gathering_food():
+	if nearby_food and nearby_food.has_method("start_gathering"):
+		if nearby_food.start_gathering(player_controller):
 			is_gathering = true
-			current_gathering_object = nearby_pumpkin
-			gathering_type = "pumpkin"
+			current_gathering_object = nearby_food
+			var food_type = "food"
+			if nearby_food.has_method("get_food_type"):
+				food_type = nearby_food.get_food_type()
+			gathering_type = food_type
 			
 			# Play gathering animation via movement component
 			if player_movement:
@@ -216,10 +225,17 @@ func start_gathering_pumpkin():
 			
 			# Apply tiredness cost via survival component
 			if player_survival:
-				player_survival.lose_tiredness(pumpkin_gathering_tiredness_cost, "gathering pumpkin")
+				player_survival.lose_tiredness(food_gathering_tiredness_cost, "gathering " + food_type)
 			
-			gathering_started.emit("pumpkin", nearby_pumpkin)
-			print("Player ", player_controller.player_id, " started gathering pumpkin")
+			gathering_started.emit(food_type, nearby_food)
+			print("Player ", player_controller.player_id, " started gathering ", food_type)
+
+# Backward compatibility methods for pumpkins during transition
+func set_nearby_pumpkin(pumpkin: Node3D):
+	set_nearby_food(pumpkin)
+
+func clear_nearby_pumpkin(pumpkin: Node3D):
+	clear_nearby_food(pumpkin)
 
 # Water interaction methods
 func set_nearby_water(water: Node3D):
@@ -399,8 +415,8 @@ func clear_all_nearby_objects():
 		clear_nearby_tent(nearby_tent)
 	if nearby_shelter:
 		clear_nearby_shelter(nearby_shelter)
-	if nearby_pumpkin:
-		clear_nearby_pumpkin(nearby_pumpkin)
+	if nearby_food:
+		clear_nearby_food(nearby_food)
 	if nearby_water:
 		clear_nearby_water(nearby_water)
 
@@ -428,8 +444,8 @@ func has_nearby_object(object_type: String) -> bool:
 			return nearby_tent != null
 		"shelter":
 			return nearby_shelter != null
-		"pumpkin":
-			return nearby_pumpkin != null
+		"pumpkin", "food":  # Support both for backward compatibility
+			return nearby_food != null
 		"water":
 			return nearby_water != null
 		_:
@@ -443,8 +459,8 @@ func get_nearby_object(object_type: String) -> Node3D:
 			return nearby_tent
 		"shelter":
 			return nearby_shelter
-		"pumpkin":
-			return nearby_pumpkin
+		"pumpkin", "food":  # Support both for backward compatibility
+			return nearby_food
 		"water":
 			return nearby_water
 		_:
@@ -460,8 +476,11 @@ func get_available_interactions() -> Array[String]:
 		interactions.append("build_tent")
 	if nearby_shelter and not is_in_shelter:
 		interactions.append("enter_shelter")
-	if nearby_pumpkin and not is_gathering:
-		interactions.append("gather_pumpkin")
+	if nearby_food and not is_gathering:
+		var food_type = "food"
+		if nearby_food.has_method("get_food_type"):
+			food_type = nearby_food.get_food_type()
+		interactions.append("gather_" + food_type)
 	if nearby_water and not is_gathering:
 		interactions.append("drink_water")
 	

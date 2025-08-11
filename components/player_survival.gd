@@ -23,8 +23,11 @@ var is_dead: bool = false
 @export var thirst_decrease_rate: float = 1.0  # Thirst lost per second (60 per minute) 
 @export var health_decrease_rate: float = 1.0  # Health lost per second when starving (60 per minute)
 @export var auto_eat_threshold: float = 30.0  # Auto-eat when hunger drops below this
-@export var pumpkin_hunger_restore: float = 25.0  # How much hunger pumpkins restore
+@export var default_food_hunger_restore: float = 25.0  # Default hunger restore for generic food
 @export var water_thirst_restore: float = 40.0  # How much thirst water restores (when implemented)
+
+# Dynamic food system
+var last_food_restore_value: float = 25.0  # Value from the last consumed food item
 
 @export var base_tiredness_rate: float = 0.2  # Base tiredness lost per second (12 per minute)
 @export var walking_tiredness_rate: float = 1.0  # Tiredness lost per second while moving
@@ -317,12 +320,24 @@ func consume_food() -> bool:
 	"""Consume food to restore hunger"""
 	if resource_manager and resource_manager.get_resource_amount("food") > 0:
 		resource_manager.remove_resource("food", 1)
-		hunger = min(hunger + pumpkin_hunger_restore, max_hunger)
+		
+		# Use the restore value from the last consumed food item, or default if none set
+		var restore_amount = last_food_restore_value if last_food_restore_value > 0 else default_food_hunger_restore
+		hunger = min(hunger + restore_amount, max_hunger)
+		
 		var remaining_food = resource_manager.get_resource_amount("food")
-		print("Player ", get_player_id(), " auto-ate food! Hunger restored to ", int(hunger), " (", remaining_food, " food remaining)")
+		print("Player ", get_player_id(), " auto-ate food! Hunger restored by ", restore_amount, " to ", int(hunger), " (", remaining_food, " food remaining)")
 		hunger_changed.emit(hunger, max_hunger)
+		
+		# Reset the restore value after use
+		last_food_restore_value = default_food_hunger_restore
 		return true
 	return false
+
+func set_last_food_restore_value(value: float) -> void:
+	"""Set the hunger restore value for the next food consumption"""
+	last_food_restore_value = value
+	print("Set food restore value to: ", value)
 
 func restore_thirst(amount: float) -> void:
 	"""Restore thirst by the specified amount"""
