@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://cjodfbct1ml6h" path="res://systems/simple_game_manager.gd" id="1_onwf1"]
 [ext_resource type="PackedScene" uid="uid://dhycgw31gv2xr" path="res://scenes/players/player.tscn" id="1_voxel"]
 [ext_resource type="PackedScene" uid="uid://b8b3dbuxtoblb" path="res://models/kenney-survival-kit/tree.tscn" id="2_awkes"]
-[ext_resource type="Script" path="res://systems/tree_spawner.gd" id="3_tree_spawner"]
+[ext_resource type="Script" uid="uid://bvulwe6djluba" path="res://systems/tree_spawner.gd" id="3_tree_spawner"]
 [ext_resource type="PackedScene" uid="uid://cs05wsnjh4clr" path="res://models/kenney_nature-kit/crop_pumpkin.tscn" id="4_53nj4"]
 [ext_resource type="PackedScene" uid="uid://cjdyrlh8hqxh6" path="res://models/placeholder/water.tscn" id="5_water"]
 [ext_resource type="PackedScene" uid="uid://cw72ssrptg1wb" path="res://models/kenney-survival-kit/rock_a.tscn" id="6_sol08"]
