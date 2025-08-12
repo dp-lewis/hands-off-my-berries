@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://cs05wsnjh4clr"]
 
 [ext_resource type="PackedScene" uid="uid://cvnqgfvcvf1t0" path="res://models/kenney_nature-kit/crop_pumpkin.glb" id="1_8xp1w"]
-[ext_resource type="Script" path="res://models/kenney_nature-kit/pumpkin.gd" id="2_1xp1w"]
+[ext_resource type="Script" uid="uid://cog0gqiidpxap" path="res://scenes/food/pumpkin.gd" id="2_1xp1w"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_8xp1w"]
 height = 0.668457

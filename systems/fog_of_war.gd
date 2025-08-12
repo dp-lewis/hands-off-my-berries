@@ -125,7 +125,7 @@ void fragment() {
 		alpha = memory_fade * (1.0 - smoothstep(0.0, 0.25, fog_value));
 	}
 	
-	ALBEDO = vec3(0.0, 0.0, 0.0);  // Black fog
+	ALBEDO = vec3(0.5, 0.5, 0.5);  // Black fog
 	ALPHA = alpha;
 }
 """
@@ -140,6 +140,14 @@ void fragment() {
 	fog_material.set_shader_parameter("world_offset", world_offset)
 	
 	fog_quad.material_override = fog_material
+
+func update_shader_parameters():
+	"""Update shader parameters when exported variables change"""
+	if fog_material:
+		fog_material.set_shader_parameter("fog_intensity", fog_intensity)
+		fog_material.set_shader_parameter("memory_fade", memory_fade)
+		fog_material.set_shader_parameter("world_bounds", world_bounds)
+		fog_material.set_shader_parameter("world_offset", world_offset)
 
 func find_players():
 	"""Find all player nodes in the scene"""
@@ -175,6 +183,7 @@ func _process(_delta):
 	"""Update fog of war based on player positions"""
 	update_player_vision()
 	update_fog_texture()
+	update_shader_parameters()
 
 func update_player_vision():
 	"""Update which tiles are currently visible to players"""
@@ -228,11 +237,6 @@ func reveal_around_position(world_pos: Vector2):
 func update_fog_texture():
 	"""Update the fog texture based on current exploration state with smooth edges"""
 	var image = fog_texture.get_image()
-	
-	# Create a higher resolution temporary grid for smoother edges
-	var smooth_factor = 2  # 2x resolution for smoother interpolation
-	var smooth_width = grid_width * smooth_factor
-	var smooth_height = grid_height * smooth_factor
 	
 	# Update texture with smoother interpolation
 	for x in range(grid_width):

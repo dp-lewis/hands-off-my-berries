@@ -1,11 +1,12 @@
-[gd_scene load_steps=15 format=3 uid="uid://woxo7m8qhipo"]
+[gd_scene load_steps=16 format=3 uid="uid://woxo7m8qhipo"]
 
 [ext_resource type="Script" uid="uid://cjodfbct1ml6h" path="res://systems/simple_game_manager.gd" id="1_onwf1"]
 [ext_resource type="PackedScene" uid="uid://dhycgw31gv2xr" path="res://scenes/players/player.tscn" id="1_voxel"]
 [ext_resource type="PackedScene" uid="uid://b8b3dbuxtoblb" path="res://models/kenney-survival-kit/tree.tscn" id="2_awkes"]
 [ext_resource type="Script" uid="uid://bvulwe6djluba" path="res://systems/tree_spawner.gd" id="3_tree_spawner"]
-[ext_resource type="PackedScene" uid="uid://cs05wsnjh4clr" path="res://models/kenney_nature-kit/crop_pumpkin.tscn" id="4_53nj4"]
+[ext_resource type="PackedScene" uid="uid://cs05wsnjh4clr" path="res://scenes/food/crop_pumpkin.tscn" id="4_53nj4"]
 [ext_resource type="PackedScene" uid="uid://cjdyrlh8hqxh6" path="res://models/placeholder/water.tscn" id="5_water"]
+[ext_resource type="PackedScene" uid="uid://bbhfwu7tblj87" path="res://scenes/food/carrot.tscn" id="6_dyk81"]
 [ext_resource type="PackedScene" uid="uid://cw72ssrptg1wb" path="res://models/kenney-survival-kit/rock_a.tscn" id="6_sol08"]
 [ext_resource type="PackedScene" uid="uid://c5gykgajyqii4" path="res://models/kenney-survival-kit/rock_b.tscn" id="7_png10"]
 [ext_resource type="PackedScene" uid="uid://cdtjegbot0vby" path="res://models/kenney-survival-kit/rock_c.tscn" id="8_xofuj"]
@@ -80,6 +81,24 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.0329, 0, 5.94086)
 [node name="crop_pumpkin7" parent="." instance=ExtResource("4_53nj4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7698, 0, 9.8873)
 
+[node name="carrot" parent="." instance=ExtResource("6_dyk81")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.6531, 0, -5.23983)
+
+[node name="carrot4" parent="." instance=ExtResource("6_dyk81")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.25831, 0, -27.6395)
+
+[node name="carrot5" parent="." instance=ExtResource("6_dyk81")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.25831, 0, -18.1181)
+
+[node name="carrot6" parent="." instance=ExtResource("6_dyk81")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.67168, 0, -28.0057)
+
+[node name="carrot2" parent="." instance=ExtResource("6_dyk81")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.6531, 0, -15.0323)
+
+[node name="carrot3" parent="." instance=ExtResource("6_dyk81")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.6531, 0, -22.8053)
+
 [node name="crop_pumpkin8" parent="." instance=ExtResource("4_53nj4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.2207, 0, -20.3004)
 
@@ -94,7 +113,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 3)
 
 [node name="water2" parent="." instance=ExtResource("5_water")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.4701, 0, -15.9634)
-visible = false
 
 [node name="rock-a2" parent="." instance=ExtResource("6_sol08")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.9855, 0, -2.35383)

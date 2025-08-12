@@ -1,0 +1,25 @@
+[gd_scene load_steps=5 format=3 uid="uid://bbhfwu7tblj87"]
+
+[ext_resource type="PackedScene" uid="uid://b2lncw8akj70y" path="res://models/kenney_nature-kit/crop_carrot.glb" id="1_i2y5y"]
+[ext_resource type="Script" uid="uid://bso7wwueqqfmd" path="res://scenes/food/carrot.gd" id="2_jeyrb"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_jeyrb"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_h73fj"]
+radius = 1.65088
+
+[node name="carrot" instance=ExtResource("1_i2y5y")]
+script = ExtResource("2_jeyrb")
+
+[node name="tmpParent" parent="." index="0"]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, -0.627625, 0)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." index="1"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" index="0"]
+shape = SubResource("CylinderShape3D_jeyrb")
+
+[node name="Area3D" type="Area3D" parent="." index="2"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" index="0"]
+shape = SubResource("CylinderShape3D_h73fj")

@@ -1,14 +1,14 @@
-extends "res://models/foods/base_food.gd"
+extends BaseFood
 
 ## Pumpkin - A specific type of food
 ## Provides 25 hunger restoration when harvested
 
 func _ready():
 	# Set pumpkin-specific properties
-	gather_time = 3.0
+	gather_time = 2.0
 	food_amount = 1
 	hunger_restore_value = 25.0
-	food_type = "pumpkin"
+	food_type = "carrot"
 	
 	# Call parent _ready to set up the base functionality
 	super._ready()

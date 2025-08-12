@@ -1,4 +1,4 @@
-extends "res://models/foods/base_food.gd"
+extends BaseFood
 
 ## Berry Bush - A fast-gathering, lower-value food
 ## Provides 15 hunger restoration when harvested
