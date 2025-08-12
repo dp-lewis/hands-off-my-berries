@@ -17,7 +17,7 @@ var is_in_shelter: bool = false
 var current_shelter: Node3D = null
 var is_in_build_mode: bool = false
 var tent_ghost: Node3D = null
-@export var tent_scene: PackedScene = preload("res://models/kenney_nature-kit/tent_detailed_closed.tscn")
+@export var tent_scene: PackedScene = preload("res://scenes/buildables/tent.tscn")
 
 # Character model reference
 @onready var character_model: Node3D = $"character-female-a2"

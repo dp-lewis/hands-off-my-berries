@@ -9,7 +9,7 @@ var current_building_type: String = "tent"
 
 # Ghost preview system
 var tent_ghost: Node3D = null
-@export var tent_scene: PackedScene = preload("res://models/kenney_nature-kit/tent_detailed_closed.tscn")
+@export var tent_scene: PackedScene = preload("res://scenes/buildables/tent.tscn")
 
 # Building costs and configuration
 @export var tent_wood_cost: int = 8

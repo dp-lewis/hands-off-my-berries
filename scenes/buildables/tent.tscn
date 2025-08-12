@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://cfaf2owsl7m5"]
 
 [ext_resource type="PackedScene" uid="uid://cfhdj32052dsd" path="res://models/kenney_nature-kit/tent_detailedClosed.glb" id="1_wrbet"]
-[ext_resource type="Script" uid="uid://dnprddebdrjcp" path="res://models/kenney_nature-kit/tent.gd" id="2_tent"]
+[ext_resource type="Script" uid="uid://dnprddebdrjcp" path="res://scenes/buildables/tent.gd" id="2_tent"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_nq8th"]
 size = Vector3(2.61768, 1, 1.93402)
