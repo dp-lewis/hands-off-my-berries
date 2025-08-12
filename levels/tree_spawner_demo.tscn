@@ -1,0 +1,68 @@
+[gd_scene load_steps=8 format=3 uid="uid://[node name="TreeSpawner" type="Node3D" parent="."]
+script = ExtResource("3_spawner")
+tree_scene = ExtResource("2_tree")
+area_size = Vector2(90, 90)
+tree_count = 100
+min_distance = 2.5
+player_clearing_radius = 8.0
+additional_clearings = Array[Vector3]([Vector3(0, 0, -20), Vector3(20, 0, 20)])
+clearing_radius = 6.0
+tree_scenes = Array[PackedScene]([ExtResource("2_tree")])
+tree_weights = Array[float]([1.0])
+use_tree_variety = false
+use_noise_clustering = true
+noise_scale = 0.04
+noise_threshold = 0.3
+cluster_density = 0.7
+noise_seed = 1230ig6"]
+
+[ext_resource type="PackedScene" uid="uid://dhycgw31gv2xr" path="res://scenes/players/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://b8b3dbuxtoblb" path="res://models/kenney-survival-kit/tree.tscn" id="2_tree"]
+[ext_resource type="Script" uid="uid://bvulwe6djluba" path="res://systems/tree_spawner.gd" id="3_spawner"]
+[ext_resource type="Script" uid="uid://b3gpnajq68k82" path="res://systems/tree_demo_controller.gd" id="4_controller"]
+
+[sub_resource type="Environment" id="Environment_demo"]
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_sky_contribution = 0.98
+reflected_light_source = 1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.1, 0.4, 0.2, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
+material = SubResource("StandardMaterial3D_ground")
+size = Vector2(100, 100)
+
+[node name="TreeSpawnerDemo" type="Node3D"]
+script = ExtResource("4_controller")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_demo")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -0.159364, 0.98722, 0, -0.98722, -0.159364, 0, 10, 0)
+shadow_enabled = true
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_ground")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 30, 30)
+fov = 60.0
+
+[node name="Player0" parent="." instance=ExtResource("1_player")]
+
+[node name="Player1" parent="." instance=ExtResource("1_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, 0)
+player_id = 1
+
+[node name="TreeSpawner" type="Node3D" parent="."]
+script = ExtResource("3_spawner")
+tree_scene = ExtResource("2_tree")
+area_size = Vector2(90, 90)
+tree_count = 500
+min_distance = 3.5
+player_clearing_radius = 8.0
+additional_clearings = Array[Vector3]([Vector3(0, 0, -20), Vector3(20, 0, 20)])
+clearing_radius = 6.0
