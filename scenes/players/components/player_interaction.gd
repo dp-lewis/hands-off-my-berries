@@ -16,6 +16,7 @@ var nearby_tent: Node3D = null
 var nearby_shelter: Node3D = null  # For tent shelter interaction
 var nearby_food: Node3D = null  # For food gathering (replaces nearby_pumpkin)
 var nearby_water: Node3D = null  # For water drinking
+var nearby_chest: Node3D = null  # For chest storage interaction
 
 # Internal state
 var is_gathering: bool = false
@@ -90,6 +91,7 @@ func _handle_interaction_pressed():
 	print("  - nearby_shelter: ", nearby_shelter)
 	print("  - nearby_food: ", nearby_food)
 	print("  - nearby_water: ", nearby_water)
+	print("  - nearby_chest: ", nearby_chest)
 	print("  - is_in_shelter: ", is_in_shelter)
 	print("  - is_gathering: ", is_gathering)
 		
@@ -97,8 +99,9 @@ func _handle_interaction_pressed():
 	# 1. Tree gathering (if not already gathering)
 	# 2. Shelter entry/exit (built tents take priority over building)
 	# 3. Tent building (only if tent is not built)
-	# 4. Food gathering (if not already gathering)
-	# 5. Water drinking (if not already gathering)
+	# 4. Chest storage interaction
+	# 5. Food gathering (if not already gathering)
+	# 6. Water drinking (if not already gathering)
 	
 	if nearby_tree and not is_gathering:
 		print("DEBUG: Starting tree gathering")
@@ -112,6 +115,15 @@ func _handle_interaction_pressed():
 	elif nearby_tent:
 		print("DEBUG: Starting tent building")
 		start_building_tent()
+	elif nearby_chest:
+		print("DEBUG: Interacting with chest")
+		# Check if chest has an active storage menu
+		if nearby_chest.has_method("get_meta") and nearby_chest.get_meta("storage_menu_active", false):
+			# Storage interface is open - UI will handle input directly
+			print("Storage interface is active - input handled by UI")
+		else:
+			# Open chest storage interface
+			interact_with_chest()
 	elif nearby_food and not is_gathering:
 		print("DEBUG: Starting food gathering")
 		start_gathering_food()
@@ -503,3 +515,25 @@ func set_interaction_enabled(enabled: bool) -> void:
 		stop_gathering()
 	
 	print("PlayerInteraction: Interactions ", "enabled" if enabled else "disabled", " for player ", get_player_id())
+
+# Chest interaction methods
+func set_nearby_chest(chest: Node3D):
+	if nearby_chest != chest:
+		nearby_chest = chest
+		nearby_object_changed.emit("chest", chest, true)
+		interaction_available.emit("open_chest", chest)
+		print("Player ", player_controller.player_id, " near chest")
+
+func clear_nearby_chest(chest: Node3D):
+	if nearby_chest == chest:
+		nearby_chest = null
+		nearby_object_changed.emit("chest", chest, false)
+		print("Player ", player_controller.player_id, " left chest area")
+
+func interact_with_chest():
+	if nearby_chest and nearby_chest.has_method("interact_with_chest"):
+		if nearby_chest.interact_with_chest(player_controller):
+			print("Player ", player_controller.player_id, " interacted with chest")
+			return true
+	print("Player ", player_controller.player_id, " failed to interact with chest")
+	return false

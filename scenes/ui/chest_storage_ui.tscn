@@ -1,0 +1,113 @@
+[gd_scene load_steps=2 format=3 uid="uid://bbwdl7s2yxfck"]
+
+[ext_resource type="Script" uid="uid://g1mhtngjbwhx" path="res://scenes/ui/chest_storage_ui.gd" id="1_h8xmk"]
+
+[node name="ChestStorageUI" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_h8xmk")
+
+[node name="BackgroundPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleLabel" type="Label" parent="MainContainer"]
+layout_mode = 2
+text = "Chest Storage"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MainContainer"]
+layout_mode = 2
+
+[node name="ContentContainer" type="HBoxContainer" parent="MainContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LeftColumn" type="VBoxContainer" parent="MainContainer/ContentContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PlayerResourcesLabel" type="Label" parent="MainContainer/ContentContainer/LeftColumn"]
+layout_mode = 2
+text = "Your Resources:
+Wood: 0
+Food: 0"
+
+[node name="VSeparator" type="VSeparator" parent="MainContainer/ContentContainer"]
+layout_mode = 2
+
+[node name="RightColumn" type="VBoxContainer" parent="MainContainer/ContentContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ChestContentsLabel" type="Label" parent="MainContainer/ContentContainer/RightColumn"]
+layout_mode = 2
+text = "Chest Contents (0/20):
+Wood: 0
+Food: 0"
+
+[node name="HSeparator2" type="HSeparator" parent="MainContainer"]
+layout_mode = 2
+
+[node name="OptionsSection" type="VBoxContainer" parent="MainContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="OptionsLabel" type="Label" parent="MainContainer/OptionsSection"]
+layout_mode = 2
+text = "Storage Options:"
+
+[node name="OptionContainer" type="VBoxContainer" parent="MainContainer/OptionsSection"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HSeparator3" type="HSeparator" parent="MainContainer"]
+layout_mode = 2
+
+[node name="CurrentOptionLabel" type="Label" parent="MainContainer"]
+layout_mode = 2
+text = ">>> Select an option <<<"
+horizontal_alignment = 1
+
+[node name="InstructionLabel" type="Label" parent="MainContainer"]
+layout_mode = 2
+text = "↑↓←→ Navigate • Action to select • Build to close"
+horizontal_alignment = 1
+
+[node name="HSeparator4" type="HSeparator" parent="MainContainer"]
+layout_mode = 2
+
+[node name="ButtonContainer" type="HBoxContainer" parent="MainContainer"]
+layout_mode = 2
+
+[node name="CloseButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Close (Build Button)"
