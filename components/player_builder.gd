@@ -7,12 +7,21 @@ var is_in_build_mode: bool = false
 var is_building: bool = false
 var current_building_type: String = "tent"
 
+# Available building types (in cycle order)
+var available_building_types: Array[String] = ["tent", "chest"]
+var current_building_index: int = 0
+var cycle_count: int = 0  # Track how many times we've cycled
+var max_cycles_before_exit: int = 3  # Exit build mode after cycling through all types once
+
 # Ghost preview system
 var tent_ghost: Node3D = null
 @export var tent_scene: PackedScene = preload("res://scenes/buildables/tent.tscn")
+var chest_ghost: Node3D = null
+@export var chest_scene: PackedScene = preload("res://scenes/buildables/chest.tscn")
 
 # Building costs and configuration
 @export var tent_wood_cost: int = 8
+@export var chest_wood_cost: int = 4
 @export var building_tiredness_cost: float = 3.0
 @export var ghost_forward_offset: float = 2.0  # Distance in front of player
 @export var ghost_opacity: float = 0.3  # Ghost transparency (0.0-1.0)
@@ -27,6 +36,9 @@ func _on_initialize():
 	if not player_controller:
 		emit_error("PlayerBuilder: No controller provided")
 		return
+	
+	# Initialize building system
+	current_building_type = available_building_types[current_building_index]
 	
 	# Find resource manager
 	find_resource_manager()
@@ -65,24 +77,66 @@ func find_survival_component():
 # Builder Interface Implementation
 
 func toggle_build_mode() -> void:
-	"""Toggle between build mode and normal mode"""
+	"""Cycle through building types or enter/exit build mode"""
 	if is_in_build_mode:
-		exit_build_mode()
+		# If already in build mode, cycle to next building type
+		cycle_to_next_building()
 	else:
+		# If not in build mode, enter with current building type
+		cycle_count = 0  # Reset cycle count when entering build mode
 		enter_build_mode()
+
+func cycle_to_next_building() -> void:
+	"""Cycle to the next available building type or exit if we've seen all"""
+	# Increment cycle count first
+	cycle_count += 1
+	
+	# Check if we've cycled through all options
+	if cycle_count > available_building_types.size():
+		# We've cycled through all building types, exit build mode
+		cycle_count = 0
+		current_building_index = 0  # Reset to first building type for next time
+		print("Player ", get_player_id(), " cycled through all building types, exiting build mode")
+		exit_build_mode()
+		return
+	
+	# Move to next building type
+	current_building_index = (current_building_index + 1) % available_building_types.size()
+	var new_building_type = available_building_types[current_building_index]
+	
+	# Set new building type
+	set_building_type(new_building_type)
+	
+	print("Player ", get_player_id(), " switched to building: ", get_current_building_display_name(), " (", cycle_count, "/", available_building_types.size(), ")")
+	
+	# Switch ghost without exiting build mode
+	switch_ghost_to_building_type(new_building_type)
+	
+	# Update build mode signal
+	build_mode_entered.emit(current_building_type)
+
+func switch_ghost_to_building_type(building_type: String) -> void:
+	"""Switch the current ghost to a different building type without exiting build mode"""
+	# Destroy current ghost
+	destroy_building_ghost()
+	
+	# Create new ghost for the building type
+	create_building_ghost(building_type)
 
 func enter_build_mode() -> void:
 	"""Enter building mode if resources are available"""
 	# Check if player has enough resources for the current building type
 	if not can_afford_building(current_building_type):
+		var cost_info = get_building_cost(current_building_type)
 		var current_wood = resource_manager.get_resource_amount("wood") if resource_manager else 0
-		print("Player ", get_player_id(), " needs ", tent_wood_cost, " wood to build tent (have ", current_wood, ")")
-		build_mode_failed.emit("Insufficient resources")
+		var needed_wood = cost_info.get("wood", 0)
+		print("Player ", get_player_id(), " needs ", needed_wood, " wood to build ", current_building_type, " (have ", current_wood, ")")
+		build_mode_failed.emit("Insufficient resources for " + get_current_building_display_name())
 		return
 	
 	is_in_build_mode = true
 	create_building_ghost(current_building_type)
-	print("Player ", get_player_id(), " entered build mode")
+	print("Player ", get_player_id(), " entered build mode - Building: ", get_current_building_display_name())
 	build_mode_entered.emit(current_building_type)
 
 func exit_build_mode() -> void:
@@ -94,26 +148,36 @@ func exit_build_mode() -> void:
 
 func update_ghost_preview() -> void:
 	"""Update ghost position relative to player"""
-	if is_in_build_mode and tent_ghost:
+	if is_in_build_mode:
 		update_ghost_position()
 
 func place_building() -> bool:
 	"""Place the current building if in build mode and resources available"""
-	if not is_in_build_mode or not tent_ghost:
+	if not is_in_build_mode or (not tent_ghost and not chest_ghost):
 		return false
 	
 	if not can_afford_building(current_building_type):
 		print("Player ", get_player_id(), " cannot afford building")
 		return false
 	
-	# Deduct resources
+	# Deduct resources based on building type
+	var wood_cost = 0
 	if resource_manager:
-		resource_manager.remove_resource("wood", tent_wood_cost)
+		match current_building_type:
+			"tent":
+				wood_cost = tent_wood_cost
+			"chest":
+				wood_cost = chest_wood_cost
+		resource_manager.remove_resource("wood", wood_cost)
 	
 	# Create actual building at ghost position
 	var new_building = create_actual_building(current_building_type)
 	if new_building:
-		new_building.global_position = tent_ghost.global_position
+		# Position building at the appropriate ghost location
+		if tent_ghost:
+			new_building.global_position = tent_ghost.global_position
+		elif chest_ghost:
+			new_building.global_position = chest_ghost.global_position
 		
 		var remaining_wood = resource_manager.get_resource_amount("wood") if resource_manager else 0
 		print("Player ", get_player_id(), " placed ", current_building_type, " (", remaining_wood, " wood remaining)")
@@ -142,6 +206,9 @@ func can_afford_building(building_type: String) -> bool:
 		"tent":
 			var current_wood = resource_manager.get_resource_amount("wood") if resource_manager else 0
 			return current_wood >= tent_wood_cost
+		"chest":
+			var current_wood = resource_manager.get_resource_amount("wood") if resource_manager else 0
+			return current_wood >= chest_wood_cost
 		_:
 			return false
 
@@ -150,6 +217,8 @@ func get_building_cost(building_type: String) -> Dictionary:
 	match building_type:
 		"tent":
 			return {"wood": tent_wood_cost}
+		"chest":
+			return {"wood": chest_wood_cost}
 		_:
 			return {}
 
@@ -162,6 +231,20 @@ func get_current_building_type() -> String:
 	"""Get the current building type"""
 	return current_building_type
 
+func get_current_building_display_name() -> String:
+	"""Get a user-friendly name for the current building type"""
+	match current_building_type:
+		"tent":
+			return "Tent (8 wood)"
+		"chest":
+			return "Chest (4 wood)"
+		_:
+			return current_building_type.capitalize()
+
+func get_available_building_types() -> Array[String]:
+	"""Get list of all available building types"""
+	return available_building_types.duplicate()
+
 func is_in_building_mode() -> bool:
 	"""Check if currently in build mode"""
 	return is_in_build_mode
@@ -173,6 +256,8 @@ func create_building_ghost(building_type: String) -> void:
 	match building_type:
 		"tent":
 			create_tent_ghost()
+		"chest":
+			create_chest_ghost()
 		_:
 			print("PlayerBuilder: Unknown building type: ", building_type)
 
@@ -192,6 +277,23 @@ func create_tent_ghost():
 			player_controller.get_parent().add_child(tent_ghost)
 			update_ghost_position()
 			ghost_created.emit(tent_ghost, "tent")
+
+func create_chest_ghost():
+	"""Create ghost preview for chest"""
+	if chest_scene and not chest_ghost:
+		chest_ghost = chest_scene.instantiate()
+		
+		# Make it semi-transparent using existing system
+		make_chest_ghost_transparent()
+		
+		# Remove functionality to make it just visual
+		remove_chest_ghost_functionality()
+		
+		# Add to the scene
+		if player_controller and player_controller.get_parent():
+			player_controller.get_parent().add_child(chest_ghost)
+			update_ghost_position()
+			ghost_created.emit(chest_ghost, "chest")
 
 func make_ghost_transparent():
 	"""Make the ghost preview semi-transparent"""
@@ -239,21 +341,52 @@ func remove_ghost_functionality():
 
 func update_ghost_position():
 	"""Update ghost position relative to player"""
-	if tent_ghost and player_controller:
+	if player_controller:
 		# Position ghost slightly in front of player
 		var forward_offset = Vector3(0, 0, -ghost_forward_offset)
-		tent_ghost.global_position = player_controller.global_position + forward_offset
-		ghost_position_updated.emit(tent_ghost.global_position)
+		var new_position = player_controller.global_position + forward_offset
+		
+		# Update the appropriate ghost based on current building type
+		if current_building_type == "tent" and tent_ghost:
+			tent_ghost.global_position = new_position
+			ghost_position_updated.emit(tent_ghost.global_position)
+		elif current_building_type == "chest" and chest_ghost:
+			chest_ghost.global_position = new_position
+			ghost_position_updated.emit(chest_ghost.global_position)
+
+func make_chest_ghost_transparent():
+	"""Make the chest ghost preview semi-transparent"""
+	if chest_ghost:
+		# Find all MeshInstance3D nodes and make them transparent
+		var mesh_instances = find_mesh_instances(chest_ghost)
+		for mesh_instance in mesh_instances:
+			create_transparent_material(mesh_instance)
+
+func remove_chest_ghost_functionality():
+	"""Remove collision and interaction from chest ghost"""
+	if chest_ghost:
+		# Remove any Area3D or StaticBody3D to prevent interactions
+		for child in chest_ghost.get_children():
+			if child is Area3D or child is StaticBody3D or child is CharacterBody3D:
+				child.queue_free()
 
 func destroy_building_ghost():
 	"""Destroy the current building ghost"""
 	destroy_tent_ghost()
+	destroy_chest_ghost()
 
 func destroy_tent_ghost():
 	"""Destroy tent ghost preview"""
 	if tent_ghost:
 		tent_ghost.queue_free()
 		tent_ghost = null
+		ghost_destroyed.emit()
+
+func destroy_chest_ghost():
+	"""Destroy chest ghost preview"""
+	if chest_ghost:
+		chest_ghost.queue_free()
+		chest_ghost = null
 		ghost_destroyed.emit()
 
 # Building Creation System
@@ -263,6 +396,8 @@ func create_actual_building(building_type: String) -> Node3D:
 	match building_type:
 		"tent":
 			return create_actual_tent()
+		"chest":
+			return create_actual_chest()
 		_:
 			print("PlayerBuilder: Cannot create unknown building type: ", building_type)
 			return null
@@ -274,6 +409,15 @@ func create_actual_tent() -> Node3D:
 		if player_controller and player_controller.get_parent():
 			player_controller.get_parent().add_child(new_tent)
 		return new_tent
+	return null
+
+func create_actual_chest() -> Node3D:
+	"""Create an actual chest building"""
+	if chest_scene:
+		var new_chest = chest_scene.instantiate()
+		if player_controller and player_controller.get_parent():
+			player_controller.get_parent().add_child(new_chest)
+		return new_chest
 	return null
 
 # Interaction with nearby buildings
