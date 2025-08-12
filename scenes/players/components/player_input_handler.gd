@@ -146,6 +146,31 @@ func is_build_mode_just_pressed() -> bool:
 	"""Check if build mode key was just pressed this frame"""
 	return Input.is_action_just_pressed(get_build_key())
 
+# Navigation key checking methods (for UI menus)
+func is_up_just_pressed() -> bool:
+	"""Check if up navigation key was just pressed this frame"""
+	if player_id in movement_actions:
+		return Input.is_action_just_pressed(movement_actions[player_id]["up"])
+	return false
+
+func is_down_just_pressed() -> bool:
+	"""Check if down navigation key was just pressed this frame"""
+	if player_id in movement_actions:
+		return Input.is_action_just_pressed(movement_actions[player_id]["down"])
+	return false
+
+func is_left_just_pressed() -> bool:
+	"""Check if left navigation key was just pressed this frame"""
+	if player_id in movement_actions:
+		return Input.is_action_just_pressed(movement_actions[player_id]["left"])
+	return false
+
+func is_right_just_pressed() -> bool:
+	"""Check if right navigation key was just pressed this frame"""
+	if player_id in movement_actions:
+		return Input.is_action_just_pressed(movement_actions[player_id]["right"])
+	return false
+
 # Input mapping configuration methods
 func set_player_id(new_player_id: int) -> void:
 	"""Change the player ID and update input mappings"""

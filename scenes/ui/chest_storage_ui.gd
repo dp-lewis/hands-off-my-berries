@@ -79,17 +79,17 @@ func handle_ui_input():
 		is_handling_input = false
 		return
 	
-	# Check for navigation input
-	if Input.is_action_just_pressed("ui_up"):
+	# Check for navigation input using player-specific controls
+	if player_input_handler.has_method("is_up_just_pressed") and player_input_handler.is_up_just_pressed():
 		navigate_up()
 		input_cooldown = input_cooldown_time
-	elif Input.is_action_just_pressed("ui_down"):
+	elif player_input_handler.has_method("is_down_just_pressed") and player_input_handler.is_down_just_pressed():
 		navigate_down()
 		input_cooldown = input_cooldown_time
-	elif Input.is_action_just_pressed("ui_left"):
+	elif player_input_handler.has_method("is_left_just_pressed") and player_input_handler.is_left_just_pressed():
 		navigate_up()
 		input_cooldown = input_cooldown_time
-	elif Input.is_action_just_pressed("ui_right"):
+	elif player_input_handler.has_method("is_right_just_pressed") and player_input_handler.is_right_just_pressed():
 		navigate_down()
 		input_cooldown = input_cooldown_time
 	
@@ -100,10 +100,6 @@ func handle_ui_input():
 	
 	# Check for build button (close interface)
 	elif player_input_handler.has_method("is_build_mode_just_pressed") and player_input_handler.is_build_mode_just_pressed():
-		hide_storage_interface()
-	
-	# Allow ESC to close as fallback
-	elif Input.is_action_just_pressed("ui_cancel"):
 		hide_storage_interface()
 	
 	is_handling_input = false
