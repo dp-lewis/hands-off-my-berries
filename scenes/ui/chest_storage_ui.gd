@@ -130,6 +130,12 @@ func show_storage_interface(chest: Node3D, player: Node):
 	current_player = player
 	current_option_index = 0
 	
+	# Disable player movement while using chest
+	var player_movement = current_player.get_component("movement") if current_player.has_method("get_component") else null
+	if player_movement and player_movement.has_method("set_movement_enabled"):
+		player_movement.set_movement_enabled(false)
+		print("Player movement disabled for chest interaction")
+	
 	# Update UI content
 	update_interface_content()
 	
@@ -146,6 +152,13 @@ func hide_storage_interface():
 	
 	is_closing = true
 	visible = false
+	
+	# Re-enable player movement when closing chest
+	if current_player:
+		var player_movement = current_player.get_component("movement") if current_player.has_method("get_component") else null
+		if player_movement and player_movement.has_method("set_movement_enabled"):
+			player_movement.set_movement_enabled(true)
+			print("Player movement re-enabled after chest interaction")
 	
 	# Clear input state to prevent any stuck inputs
 	input_cooldown = 0.0

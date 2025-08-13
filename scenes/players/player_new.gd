@@ -258,6 +258,20 @@ func exit_tent_shelter(shelter: Node3D):
 	if player_interaction:
 		player_interaction.exit_tent_shelter(shelter)
 
+# Chest interaction compatibility
+func set_nearby_chest(chest: Node3D):
+	if player_interaction:
+		player_interaction.set_nearby_chest(chest)
+
+func clear_nearby_chest(chest: Node3D):
+	if player_interaction:
+		player_interaction.clear_nearby_chest(chest)
+
+func interact_with_chest():
+	if player_interaction:
+		return player_interaction.interact_with_chest()
+	return false
+
 # Resource inventory compatibility (delegated to ResourceManager)
 func add_wood(amount: int) -> bool:
 	if not resource_manager:

@@ -11,6 +11,7 @@ signal build_mode_toggled
 
 # Input configuration for different player IDs
 var player_id: int = 0
+var input_enabled: bool = true
 
 # Input action mappings for each player
 var movement_actions: Dictionary = {}
@@ -84,7 +85,7 @@ func setup_input_mappings():
 	}
 
 func _process(_delta: float) -> void:
-	if not is_initialized:
+	if not is_initialized or not input_enabled:
 		return
 	
 	# Handle movement input
@@ -258,3 +259,15 @@ func get_input_state() -> Dictionary:
 func is_movement_active() -> bool:
 	"""Check if player is currently providing movement input"""
 	return get_input_direction().length() > 0.1
+
+func set_input_enabled(enabled: bool) -> void:
+	"""Enable or disable all input processing"""
+	input_enabled = enabled
+	if not enabled:
+		# Clear any held actions when disabling input
+		input_state["movement_active"] = false
+		input_state["action_held"] = false
+
+func is_input_enabled() -> bool:
+	"""Check if input processing is enabled"""
+	return input_enabled

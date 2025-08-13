@@ -396,6 +396,11 @@ func trigger_death_sequence():
 	
 	# Stop all survival processing by disabling movement and interactions
 	if player_controller:
+		# Disable input processing to prevent any input from being processed
+		var input_handler = get_sibling_component("input_handler")
+		if input_handler and input_handler.has_method("set_input_enabled"):
+			input_handler.set_input_enabled(false)
+		
 		# Disable movement
 		var movement = get_sibling_component("movement")
 		if movement and movement.has_method("set_movement_enabled"):
@@ -436,6 +441,11 @@ func respawn_player():
 	if player_controller:
 		# Restore visibility (in case player was hidden in shelter)
 		player_controller.visible = true
+		
+		# Re-enable input processing
+		var input_handler = get_sibling_component("input_handler")
+		if input_handler and input_handler.has_method("set_input_enabled"):
+			input_handler.set_input_enabled(true)
 		
 		var movement = get_sibling_component("movement")
 		if movement and movement.has_method("set_movement_enabled"):
