@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://woxo7m8qhipo"]
+[gd_scene load_steps=17 format=3 uid="uid://woxo7m8qhipo"]
 
 [ext_resource type="Script" uid="uid://cjodfbct1ml6h" path="res://systems/simple_game_manager.gd" id="1_onwf1"]
 [ext_resource type="PackedScene" uid="uid://dhycgw31gv2xr" path="res://scenes/players/player.tscn" id="1_voxel"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://cdtjegbot0vby" path="res://models/kenney-survival-kit/rock_c.tscn" id="8_xofuj"]
 [ext_resource type="Script" uid="uid://sru7o38qa2yp" path="res://systems/simple_fog_of_war.gd" id="9_simple_fog"]
 [ext_resource type="Script" uid="uid://cwb1iohgm6hqq" path="res://systems/simple_fog_demo.gd" id="10_simple_fog_demo"]
+[ext_resource type="PackedScene" uid="uid://cq17lv67xu3sr" path="res://scenes/food/berries.tscn" id="13_qsiba"]
 
 [sub_resource type="Environment" id="Environment_brxo2"]
 ambient_light_sky_contribution = 0.98
@@ -139,3 +140,6 @@ reveal_radius = 140.0
 
 [node name="SimpleFogDemo" type="Node" parent="."]
 script = ExtResource("10_simple_fog_demo")
+
+[node name="Berries" parent="." instance=ExtResource("13_qsiba")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.79379, 0.0803292, -4.87362)

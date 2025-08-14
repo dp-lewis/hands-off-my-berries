@@ -1,0 +1,47 @@
+[gd_scene load_steps=8 format=3 uid="uid://cq17lv67xu3sr"]
+
+[ext_resource type="Script" uid="uid://d0r3nj35lq5bl" path="res://scenes/food/berries.gd" id="1_6cus7"]
+[ext_resource type="PackedScene" uid="uid://d2upsrm5w20ar" path="res://models/kenney_nature-kit/crops_cornStageA.glb" id="2_wp5iv"]
+[ext_resource type="PackedScene" uid="uid://cupywjieaxh1q" path="res://models/kenney_nature-kit/crops_cornStageB.glb" id="3_2u05x"]
+[ext_resource type="PackedScene" uid="uid://qh7lrwx7e2lk" path="res://models/kenney_nature-kit/crops_cornStageC.glb" id="4_1dc3v"]
+[ext_resource type="PackedScene" uid="uid://bk0tiyqe6ud02" path="res://models/kenney_nature-kit/crops_cornStageD.glb" id="5_yuc8l"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_6cus7"]
+radius = 0.75
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_wp5iv"]
+radius = 0.2
+
+[node name="Berries" type="Node3D" node_paths=PackedStringArray("stage1", "stage2", "stage3", "stage4")]
+script = ExtResource("1_6cus7")
+stage1 = NodePath("Meshes/crops_cornStageA")
+stage2 = NodePath("Meshes/crops_cornStageB")
+stage3 = NodePath("Meshes/crops_cornStageC")
+stage4 = NodePath("Meshes/crops_cornStageD")
+stage_durations = Array[float]([5.0, 5.0, 5.0, 5.0])
+
+[node name="Meshes" type="Node3D" parent="."]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="crops_cornStageA" parent="Meshes" instance=ExtResource("2_wp5iv")]
+visible = false
+
+[node name="crops_cornStageB" parent="Meshes" instance=ExtResource("3_2u05x")]
+visible = false
+
+[node name="crops_cornStageC" parent="Meshes" instance=ExtResource("4_1dc3v")]
+visible = false
+
+[node name="crops_cornStageD" parent="Meshes" instance=ExtResource("5_yuc8l")]
+
+[node name="Area3D" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.947754, 0)
+shape = SubResource("CylinderShape3D_6cus7")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.990212, 0)
+shape = SubResource("CylinderShape3D_wp5iv")
