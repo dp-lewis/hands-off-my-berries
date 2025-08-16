@@ -14,6 +14,7 @@ var player_builder # : PlayerBuilder
 var player_interaction # : PlayerInteraction
 var player_input_handler # : PlayerInputHandler
 var player_inventory # : PlayerInventory
+var player_farming # : PlayerFarming
 var camera_relative_movement # : CameraRelativeMovement
 
 # Resource Management System (keeping existing integration)
@@ -67,6 +68,7 @@ func setup_components():
 	var PlayerInteractionScript = load("res://scenes/players/components/player_interaction.gd")
 	var PlayerInputHandlerScript = load("res://scenes/players/components/player_input_handler.gd")
 	var PlayerInventoryScript = load("res://components/player_inventory.gd")
+	var PlayerFarmingScript = load("res://components/player_farming.gd")
 	var CameraRelativeMovementScript = load("res://components/camera_relative_movement.gd")
 	
 	player_inventory = PlayerInventoryScript.new()
@@ -75,6 +77,7 @@ func setup_components():
 	player_builder = PlayerBuilderScript.new()
 	player_interaction = PlayerInteractionScript.new()
 	player_input_handler = PlayerInputHandlerScript.new()
+	player_farming = PlayerFarmingScript.new()
 	camera_relative_movement = CameraRelativeMovementScript.new()
 	
 	# Add components as children
@@ -84,6 +87,7 @@ func setup_components():
 	add_child(player_interaction)
 	add_child(player_input_handler)
 	add_child(player_inventory)
+	add_child(player_farming)
 	add_child(camera_relative_movement)
 	
 	# Initialize components with this controller
@@ -93,6 +97,7 @@ func setup_components():
 	player_interaction.initialize(self)
 	player_input_handler.initialize(self)
 	player_inventory.initialize(self)
+	player_farming.initialize(self)
 	# camera_relative_movement doesn't need initialize (it's not a PlayerComponent)
 	
 	# Setup component communication
@@ -247,6 +252,8 @@ func get_component(component_type: String):
 			return player_input_handler
 		"inventory", "player_inventory", "playerinventory":
 			return player_inventory
+		"farming", "player_farming", "playerfarming":
+			return player_farming
 		"resource_manager", "resourcemanager":
 			return resource_manager
 		_:
@@ -529,6 +536,7 @@ func give_starting_items():
 	var bucket_def = ItemRegistry.get_item_definition("bucket")
 	var watering_can_def = ItemRegistry.get_item_definition("watering_can") 
 	var berry_seeds_def = ItemRegistry.get_item_definition("berry_seeds")
+	var hoe_def = ItemRegistry.get_item_definition("hoe")
 	
 	# Add items to inventory
 	if bucket_def:
@@ -537,3 +545,7 @@ func give_starting_items():
 		player_inventory.add_item(watering_can_def, 1, "full")
 	if berry_seeds_def:
 		player_inventory.add_item(berry_seeds_def, 5)
+	if hoe_def:
+		player_inventory.add_item(hoe_def, 1)
+	if hoe_def:
+		player_inventory.add_item(hoe_def, 1)

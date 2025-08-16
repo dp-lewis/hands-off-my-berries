@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3 uid="uid://bxk8j2n4p5m9s"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_1"]
+size = Vector3(0.9, 0.05, 0.9)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
+flags_unshaded = true
+albedo_color = Color(0.6, 0.3, 0.15, 1)
+
+[node name="TilledSoil" type="StaticBody3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+mesh = SubResource("BoxMesh_1")
+surface_material_override/0 = SubResource("StandardMaterial3D_1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+shape = SubResource("BoxShape3D_2")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_2"]
+size = Vector3(0.9, 0.05, 0.9)

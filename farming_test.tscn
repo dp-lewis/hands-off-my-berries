@@ -1,0 +1,38 @@
+[gd_scene load_steps=4 format=3 uid="uid://bgd2nrxr8jmx8"]
+
+[ext_resource type="Script" path="res://farming_test.gd" id="1_h3j4k"]
+[ext_resource type="PackedScene" uid="uid://cl0y7b6gskwqn" path="res://scenes/players/player.tscn" id="2_player"]
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 1
+background_color = Color(0.5, 0.7, 1.0, 1.0)
+ambient_light_source = 1
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_energy = 0.3
+
+[node name="FarmingTestScene" type="Node3D"]
+script = ExtResource("1_h3j4k")
+
+[node name="Environment" type="Node3D" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="Environment"]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 5, 10)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Environment"]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 10, 0)
+
+[node name="Ground" type="StaticBody3D" parent="Environment"]
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Environment/Ground"]
+transform = Transform3D(20, 0, 0, 0, 1, 0, 0, 0, 20, 0, 0, 0)
+mesh = BoxMesh.new()
+
+[node name="GroundCollision" type="CollisionShape3D" parent="Environment/Ground"]
+transform = Transform3D(20, 0, 0, 0, 1, 0, 0, 0, 20, 0, 0, 0)
+shape = BoxShape3D.new()
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Environment"]
+environment = SubResource("Environment_1")
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)

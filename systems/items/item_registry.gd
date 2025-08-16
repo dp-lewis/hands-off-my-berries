@@ -27,6 +27,10 @@ static func initialize():
 	var watering_can_def = create_watering_can_definition()
 	register_item(watering_can_def)
 	
+	# Register hoe for soil preparation
+	var hoe_def = create_hoe_definition()
+	register_item(hoe_def)
+	
 	_initialized = true
 	print("ItemRegistry: Initialized with ", _definitions.size(), " item definitions")
 
@@ -112,6 +116,27 @@ static func create_watering_can_definition():
 	definition.tool_efficiency = 2.0  # More efficient than bucket
 	var watering_actions: Array[String] = ["water"]
 	definition.tool_actions = watering_actions
+	
+	return definition
+
+static func create_hoe_definition():
+	"""Create hoe tool item definition"""
+	var definition = preload("res://systems/items/item_definition.gd").new()
+	
+	definition.item_id = "hoe"
+	definition.display_name = "Hoe"
+	definition.description = "Essential farming tool for tilling soil before planting crops."
+	definition.item_type = "tool"
+	
+	definition.max_stack_size = 1
+	definition.is_stackable = false
+	
+	definition.is_tool = true
+	definition.has_durability = true
+	definition.max_durability = 100  # 100 uses before breaking
+	definition.tool_efficiency = 1.0  # Standard efficiency for tilling
+	var tilling_actions: Array[String] = ["till", "prepare_soil"]
+	definition.tool_actions = tilling_actions
 	
 	return definition
 

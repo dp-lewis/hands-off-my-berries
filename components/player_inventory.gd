@@ -19,7 +19,7 @@ var player_interaction  # PlayerInteraction component
 # Signals
 signal inventory_changed(slot_index: int)
 signal selected_slot_changed(new_slot: int, old_slot: int)
-signal item_used(slot_index: int, item_slot)  # InventorySlot dynamic typing
+signal item_used(item_definition, quantity: int, player_node: Node3D)  # Updated for farming integration
 signal hotbar_slot_selected(slot_index: int)
 
 func _on_initialize():
@@ -35,8 +35,8 @@ func _on_initialize():
 		emit_error("ResourceManager component not found")
 		return
 	
-	# Give starting items
-	give_starting_items()
+	# Note: Starting items are handled by PlayerController.give_starting_items()
+	print("PlayerInventory: Inventory system initialized")
 
 func _on_cleanup():
 	"""Clean up inventory system"""
@@ -51,21 +51,6 @@ func setup_inventory_slots():
 		slot.slot_changed.connect(_on_slot_changed.bind(i))
 		slot.item_state_changed.connect(_on_item_state_changed.bind(i))
 		inventory_slots.append(slot)
-
-func give_starting_items():
-	"""Give the player their starting items"""
-	# Get item definitions from registry
-	var bucket_def = ItemRegistry.get_item_definition("bucket")
-	var watering_can_def = ItemRegistry.get_item_definition("watering_can")
-	var berry_seeds_def = ItemRegistry.get_item_definition("berry_seeds")
-	
-	# Add starting items to hotbar slots
-	if bucket_def:
-		add_item(bucket_def, 1)  # Empty bucket
-	if watering_can_def:
-		add_item(watering_can_def, 1)  # Full watering can  
-	if berry_seeds_def:
-		add_item(berry_seeds_def, 5)  # 5 berry seeds
 
 # === SLOT MANAGEMENT ===
 
@@ -250,7 +235,12 @@ func use_selected_item() -> bool:
 	var success = false
 	match item_def.item_id:
 		"berry_seeds":
-			print("PlayerInventory: Planting berry seeds!")
+			print("PlayerInventory: Attempting to plant berry seeds!")
+			# The PlayerFarming component will handle the actual planting logic
+			success = true
+		"hoe":
+			print("PlayerInventory: Using hoe to till soil!")
+			# The PlayerFarming component will handle the actual tilling logic
 			success = true
 		"bucket":
 			print("PlayerInventory: Using bucket (", selected_slot.current_state, ")")
@@ -261,14 +251,16 @@ func use_selected_item() -> bool:
 				selected_slot.current_state = "empty"
 			success = true
 		"watering_can":
-			print("PlayerInventory: Using watering can!")
+			print("PlayerInventory: Using watering can to water crops!")
+			# The PlayerFarming component will handle the actual watering logic
 			success = true
 		_:
 			print("PlayerInventory: Generic item usage for ", item_def.item_id)
 			success = true
 	
 	if success:
-		item_used.emit(selected_hotbar_slot, selected_slot)
+		# Emit signal with item definition for farming component to handle
+		item_used.emit(item_def, selected_slot.quantity, player_controller)
 		
 		# Handle consumable items
 		if item_def.is_consumable and item_def.consume_on_use:
