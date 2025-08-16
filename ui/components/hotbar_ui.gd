@@ -12,10 +12,12 @@ var selected_slot: int = 0
 # Component references
 var target_inventory # : PlayerInventory
 var hotbar_slots: Array = []  # Array of HotbarSlotUI controls
+var player_id: int = -1  # Player ID for input actions
 
 # Signals
 signal slot_clicked(slot_index: int)
 signal slot_right_clicked(slot_index: int)
+signal hotbar_selection_changed(new_slot: int, old_slot: int)
 
 # Styles for slots
 var normal_style: StyleBoxFlat
@@ -26,11 +28,47 @@ func _ready():
 	# Initialize hotbar UI
 	hotbar_size = 4
 	selected_slot = 0
+	setup_styles()
 	create_hotbar_slots()
+	
+	# Enable input processing
+	set_process_unhandled_input(true)
+
+func _unhandled_input(_event):
+	"""Handle input for hotbar navigation using custom input actions"""
+	if player_id < 0:
+		return  # No player assigned yet
+	
+	# Construct input action names based on player ID
+	var left_action = "p" + str(player_id + 1) + "_hud_left"
+	var right_action = "p" + str(player_id + 1) + "_hud_right"
+	
+	# Check for navigation input actions
+	if Input.is_action_just_pressed(left_action):
+		navigate_hotbar(-1)
+		get_viewport().set_input_as_handled()
+	elif Input.is_action_just_pressed(right_action):
+		navigate_hotbar(1)
+		get_viewport().set_input_as_handled()
+
+func navigate_hotbar(direction: int):
+	"""Navigate hotbar slots with wrap-around"""
+	var new_slot = (selected_slot + direction) % hotbar_size
+	if new_slot < 0:
+		new_slot = hotbar_size - 1
+	set_selected_slot(new_slot)
 
 func setup_for_player(player: Node3D):
 	"""Connect this hotbar to a specific player's inventory"""
 	if player and player.has_method("get_component"):
+		# Store player ID for input actions
+		if player.has_method("get") and "player_id" in player:
+			player_id = player.player_id
+		elif "player_id" in player:
+			player_id = player.player_id
+		else:
+			player_id = 0  # Default fallback
+		
 		target_inventory = player.get_component("inventory")
 		if target_inventory:
 			# Connect to inventory signals for updates
@@ -285,8 +323,18 @@ func update_all_slots():
 
 func set_selected_slot(slot_index: int):
 	"""Set which slot is visually selected"""
-	selected_slot = slot_index
+	var old_slot = selected_slot
+	selected_slot = clamp(slot_index, 0, hotbar_size - 1)
+	
+	# Update visual display
 	update_all_slots()
+	
+	# Notify inventory system of selection change
+	if target_inventory and target_inventory.has_method("set_selected_hotbar_slot"):
+		target_inventory.set_selected_hotbar_slot(selected_slot)
+	
+	# Emit signal for other systems
+	hotbar_selection_changed.emit(selected_slot, old_slot)
 
 # Signal handlers
 func _on_selected_slot_changed(new_slot: int, _old_slot: int):
