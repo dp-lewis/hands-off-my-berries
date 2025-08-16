@@ -77,7 +77,12 @@ func get_slot(index: int):  # -> InventorySlot (dynamic typing)
 
 func get_selected_slot():  # -> InventorySlot (dynamic typing)
 	"""Get currently selected hotbar slot"""
-	return get_slot(selected_hotbar_slot)
+	var slot = get_slot(selected_hotbar_slot)
+	if slot and not slot.is_empty():
+		print("PlayerInventory: Selected slot ", selected_hotbar_slot, " contains: ", slot.item_definition.display_name)
+	else:
+		print("PlayerInventory: Selected slot ", selected_hotbar_slot, " is empty")
+	return slot
 
 func get_hotbar_slots() -> Array:  # Array[InventorySlot] (dynamic typing)
 	"""Get all hotbar slots"""
@@ -205,10 +210,12 @@ func get_item_count(item_id: String, state: String = "") -> int:
 func select_hotbar_slot(slot_index: int) -> bool:
 	"""Select a hotbar slot"""
 	if slot_index < 0 or slot_index >= hotbar_size:
+		print("PlayerInventory: Invalid slot index: ", slot_index)
 		return false
 	
 	var old_slot = selected_hotbar_slot
 	selected_hotbar_slot = slot_index
+	print("PlayerInventory: Changed selected slot from ", old_slot, " to ", selected_hotbar_slot)
 	
 	selected_slot_changed.emit(selected_hotbar_slot, old_slot)
 	hotbar_slot_selected.emit(selected_hotbar_slot)
@@ -233,19 +240,47 @@ func use_selected_item() -> bool:
 	"""Use the currently selected item"""
 	var selected_slot = get_selected_slot()
 	if not selected_slot or selected_slot.is_empty():
+		print("PlayerInventory: No item selected or slot is empty")
 		return false
 	
-	item_used.emit(selected_hotbar_slot, selected_slot)
+	var item_def = selected_slot.item_definition
+	print("PlayerInventory: Using item: ", item_def.display_name, " (", item_def.item_id, ")")
 	
-	# Handle consumable items
-	if selected_slot.item_definition.is_consumable and selected_slot.item_definition.consume_on_use:
-		selected_slot.remove_quantity(1)
+	# Handle specific item types with custom logic
+	var success = false
+	match item_def.item_id:
+		"berry_seeds":
+			print("PlayerInventory: Planting berry seeds!")
+			success = true
+		"bucket":
+			print("PlayerInventory: Using bucket (", selected_slot.current_state, ")")
+			# Toggle bucket state
+			if selected_slot.current_state == "empty":
+				selected_slot.current_state = "full"
+			else:
+				selected_slot.current_state = "empty"
+			success = true
+		"watering_can":
+			print("PlayerInventory: Using watering can!")
+			success = true
+		_:
+			print("PlayerInventory: Generic item usage for ", item_def.item_id)
+			success = true
 	
-	# Handle tool durability
-	if selected_slot.item_definition.has_durability:
-		selected_slot.damage_item(1)  # Basic damage, could be customized
+	if success:
+		item_used.emit(selected_hotbar_slot, selected_slot)
+		
+		# Handle consumable items
+		if item_def.is_consumable and item_def.consume_on_use:
+			print("PlayerInventory: Consuming item (before: ", selected_slot.quantity, ")")
+			selected_slot.remove_quantity(1)
+			print("PlayerInventory: Item consumed (after: ", selected_slot.quantity, ")")
+		
+		# Handle tool durability
+		if item_def.has_durability:
+			selected_slot.damage_item(1)  # Basic damage, could be customized
 	
-	return true
+	return success
 
 func use_item_in_slot(slot_index: int) -> bool:
 	"""Use item in a specific slot"""

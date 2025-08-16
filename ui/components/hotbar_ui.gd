@@ -89,8 +89,15 @@ func _on_inventory_changed(slot_index: int):
 	# Ignore non-hotbar slots
 
 func _on_hotbar_selection_changed(slot_index: int):
-	"""Handle hotbar selection changes"""
-	set_selected_slot(slot_index)  # Just update the visual display
+	"""Handle hotbar selection changes from inventory"""
+	# Only update visual display, don't call back to inventory
+	var old_slot = selected_slot
+	selected_slot = clamp(slot_index, 0, hotbar_size - 1)
+	update_all_slots()
+	print("HotbarUI: Visual selection updated to slot ", selected_slot, " (from inventory signal)")
+	
+	# Emit signal for other systems but don't call inventory
+	hotbar_selection_changed.emit(selected_slot, old_slot)
 
 func setup_styles():
 	"""Create visual styles for hotbar slots"""
@@ -140,7 +147,8 @@ func setup_for_inventory(inventory):
 	# Connect to inventory signals
 	if target_inventory:
 		target_inventory.inventory_changed.connect(_on_inventory_changed)
-		target_inventory.selected_slot_changed.connect(_on_selected_slot_changed)
+		# Note: Don't connect to selected_slot_changed to avoid recursion
+		# We only need hotbar_slot_selected signal for visual updates
 	
 	# Create hotbar slot UI elements
 	create_hotbar_slots()
@@ -322,24 +330,23 @@ func update_all_slots():
 		update_slot_display(i)
 
 func set_selected_slot(slot_index: int):
-	"""Set which slot is visually selected"""
+	"""Set which slot is visually selected (called from user input)"""
 	var old_slot = selected_slot
 	selected_slot = clamp(slot_index, 0, hotbar_size - 1)
 	
 	# Update visual display
 	update_all_slots()
 	
-	# Notify inventory system of selection change
-	if target_inventory and target_inventory.has_method("set_selected_hotbar_slot"):
-		target_inventory.set_selected_hotbar_slot(selected_slot)
+	# Only notify inventory system if this is a user-initiated change
+	# (not from an inventory signal to prevent recursion)
+	if target_inventory and target_inventory.has_method("select_hotbar_slot"):
+		target_inventory.select_hotbar_slot(selected_slot)
+		print("HotbarUI: Updated inventory selected slot to ", selected_slot, " (user input)")
+	else:
+		print("HotbarUI: Could not update inventory selected slot - method not found")
 	
 	# Emit signal for other systems
 	hotbar_selection_changed.emit(selected_slot, old_slot)
-
-# Signal handlers
-func _on_selected_slot_changed(new_slot: int, _old_slot: int):
-	"""Handle hotbar selection changes"""
-	set_selected_slot(new_slot)
 
 # Hotbar interaction methods
 func select_slot(slot_index: int):

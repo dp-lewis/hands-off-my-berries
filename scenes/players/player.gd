@@ -169,13 +169,36 @@ func _on_world_movement_input(world_direction: Vector2):
 
 func _on_action_pressed():
 	"""Handle action button press"""
+	print("Player ", player_id, " action pressed!")
+	
 	# Check if in build mode first
 	if player_builder and player_builder.is_in_building_mode():
+		print("Player ", player_id, " is in build mode - placing building")
 		# In build mode, action places building
 		player_builder.place_building()
-	elif player_interaction:
-		# Normal mode, handle interactions
+	elif player_interaction and _has_nearby_interaction():
+		print("Player ", player_id, " has nearby interaction")
+		# Normal mode with nearby interaction, handle interactions
 		player_interaction.handle_interaction_input(true, false)
+	elif player_inventory:
+		print("Player ", player_id, " using selected item")
+		# No nearby interaction, try to use selected item
+		player_inventory.use_selected_item()
+	else:
+		print("Player ", player_id, " - no valid action available")
+
+func _has_nearby_interaction() -> bool:
+	"""Check if there are any nearby objects to interact with"""
+	if not player_interaction:
+		return false
+	
+	return (player_interaction.nearby_tree != null or 
+			player_interaction.nearby_food != null or 
+			player_interaction.nearby_water != null or 
+			player_interaction.nearby_tent != null or 
+			player_interaction.nearby_shelter != null or 
+			player_interaction.nearby_chest != null or
+			player_interaction.is_in_shelter)
 
 func _on_action_released():
 	"""Handle action button release"""
