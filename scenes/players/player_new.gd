@@ -13,6 +13,7 @@ var player_survival # : PlayerSurvival
 var player_builder # : PlayerBuilder
 var player_interaction # : PlayerInteraction
 var player_input_handler # : PlayerInputHandler
+var player_inventory # : PlayerInventory
 
 # Resource Management System (keeping existing integration)
 @onready var resource_manager: ResourceManager = $ResourceManager
@@ -46,6 +47,9 @@ func _ready():
 	# Add player to group for day/night system to find
 	add_to_group("players")
 	
+	# Initialize item system
+	setup_item_system()
+	
 	# Setup resource management system
 	setup_resource_system()
 	
@@ -55,6 +59,14 @@ func _ready():
 	# Initialize component architecture
 	setup_components()
 
+func setup_item_system():
+	"""Initialize the item registry and definitions"""
+	# Initialize item registry
+	var ItemRegistry = preload("res://systems/items/item_registry.gd")
+	ItemRegistry.initialize()
+	
+	print("PlayerController: Item system initialized for player ", player_id)
+
 func setup_components():
 	"""Initialize all player components"""
 	
@@ -62,14 +74,19 @@ func setup_components():
 	var PlayerMovement = load("res://components/player_movement.gd")
 	var PlayerSurvival = load("res://components/player_survival.gd")
 	var PlayerBuilder = load("res://components/player_builder.gd")
-	var PlayerInteraction = load("res://scenes/players/components/player_interaction.gd")
-	var PlayerInputHandler = load("res://scenes/players/components/player_input_handler.gd")
+	var PlayerInteractionScript = load("res://scenes/players/components/player_interaction.gd")
+	var PlayerInputHandlerScript = load("res://scenes/players/components/player_input_handler.gd")
+	var PlayerInventory = load("res://components/player_inventory.gd")
+	
+	print("PlayerController: [SETUP v2] Creating inventory component...")
+	player_inventory = PlayerInventory.new()
+	print("PlayerController: PlayerInventory created: ", player_inventory)
 	
 	player_movement = PlayerMovement.new()
 	player_survival = PlayerSurvival.new()
 	player_builder = PlayerBuilder.new()
-	player_interaction = PlayerInteraction.new()
-	player_input_handler = PlayerInputHandler.new()
+	player_interaction = PlayerInteractionScript.new()
+	player_input_handler = PlayerInputHandlerScript.new()
 	
 	# Add components as children
 	add_child(player_movement)
@@ -77,6 +94,9 @@ func setup_components():
 	add_child(player_builder)
 	add_child(player_interaction)
 	add_child(player_input_handler)
+	print("PlayerController: Adding inventory as child...")
+	add_child(player_inventory)
+	print("PlayerController: Inventory added, total children: ", get_children().size())
 	
 	# Initialize components with this controller
 	player_movement.initialize(self)
@@ -84,9 +104,15 @@ func setup_components():
 	player_builder.initialize(self)
 	player_interaction.initialize(self)
 	player_input_handler.initialize(self)
+	print("PlayerController: Initializing inventory component...")
+	player_inventory.initialize(self)
+	print("PlayerController: Inventory initialized")
 	
 	# Setup component communication
 	connect_component_signals()
+	
+	# Give starting items to player
+	give_starting_items()
 	
 	print("PlayerController: All components initialized for player ", player_id)
 
@@ -102,6 +128,10 @@ func connect_component_signals():
 		player_input_handler.action_released.connect(_on_action_released)
 	if player_input_handler.has_signal("build_mode_toggled"):
 		player_input_handler.build_mode_toggled.connect(_on_build_mode_toggled)
+	if player_input_handler.has_signal("hotbar_left_pressed"):
+		player_input_handler.hotbar_left_pressed.connect(_on_hotbar_left_pressed)
+	if player_input_handler.has_signal("hotbar_right_pressed"):
+		player_input_handler.hotbar_right_pressed.connect(_on_hotbar_right_pressed)
 	
 	# Movement -> Interaction (movement interrupts gathering)
 	if player_movement.has_signal("movement_started"):
@@ -162,6 +192,18 @@ func _on_build_mode_toggled():
 	if player_builder:
 		player_builder.toggle_build_mode()
 
+func _on_hotbar_left_pressed():
+	"""Handle hotbar left navigation"""
+	if player_inventory:
+		player_inventory.navigate_hotbar(-1)  # Move left
+		print("Player ", player_id, " navigated hotbar left")
+
+func _on_hotbar_right_pressed():
+	"""Handle hotbar right navigation"""
+	if player_inventory:
+		player_inventory.navigate_hotbar(1)  # Move right
+		print("Player ", player_id, " navigated hotbar right")
+
 # Component coordination handlers
 func _on_gathering_started(_object_type: String, _object: Node3D):
 	"""Coordinate gathering start across components"""
@@ -185,22 +227,38 @@ func _on_component_error(message: String):
 # Component access methods
 func get_component(component_type: String):
 	"""Get a component by type name"""
-	match component_type.to_lower():
-		"movement", "player_movement", "playermovement":
-			return player_movement
-		"survival", "player_survival", "playersurvival":
-			return player_survival
-		"builder", "player_builder", "playerbuilder":
-			return player_builder
-		"interaction", "player_interaction", "playerinteraction":
-			return player_interaction
-		"input_handler", "player_input_handler", "playerinputhandler":
-			return player_input_handler
-		"resource_manager", "resourcemanager":
-			return resource_manager
-		_:
-			print("PlayerController: Unknown component type: ", component_type)
-			return null
+	print("PlayerController: [UPDATED v2] get_component called with '", component_type, "'")
+	print("PlayerController: player_inventory = ", player_inventory)
+	
+	var lower_type = component_type.to_lower()
+	print("PlayerController: Testing against: '", lower_type, "'")
+	
+	# Use if/else instead of match for debugging
+	if lower_type in ["movement", "player_movement", "playermovement"]:
+		print("PlayerController: Matched movement")
+		return player_movement
+	elif lower_type in ["survival", "player_survival", "playersurvival"]:
+		print("PlayerController: Matched survival")
+		return player_survival
+	elif lower_type in ["builder", "player_builder", "playerbuilder"]:
+		print("PlayerController: Matched builder")
+		return player_builder
+	elif lower_type in ["interaction", "player_interaction", "playerinteraction"]:
+		print("PlayerController: Matched interaction")
+		return player_interaction
+	elif lower_type in ["input_handler", "player_input_handler", "playerinputhandler"]:
+		print("PlayerController: Matched input_handler")
+		return player_input_handler
+	elif lower_type in ["inventory", "player_inventory", "playerinventory"]:
+		print("PlayerController: MATCHED INVENTORY! Returning: ", player_inventory)
+		return player_inventory
+	elif lower_type in ["resource_manager", "resourcemanager"]:
+		print("PlayerController: Matched resource_manager")
+		return resource_manager
+	else:
+		print("PlayerController: No match found for: '", lower_type, "'")
+		print("PlayerController: Unknown component type: ", component_type)
+		return null
 
 # Legacy compatibility methods (for external game objects)
 # These delegate to the appropriate components
@@ -439,6 +497,64 @@ func setup_ui_for_player():
 # Component cleanup
 func _exit_tree():
 	"""Clean up all components when player is destroyed"""
+
+# === STARTING ITEMS ===
+
+func give_starting_items():
+	"""Give player basic starting items when they spawn"""
+	# Wait a frame to ensure inventory is fully initialized
+	await get_tree().process_frame
+	
+	if not player_inventory:
+		print("PlayerController: Cannot give starting items - no inventory component")
+		return
+	
+	print("PlayerController: Giving starting items to player ", player_id)
+	
+	# Give basic tools for immediate use
+	ItemRegistry.give_item_to_player(self, "bucket", 1, "empty")
+	ItemRegistry.give_item_to_player(self, "watering_can", 1)
+	
+	# Give starting seeds for early game progression
+	ItemRegistry.give_item_to_player(self, "berry_seeds", 5)
+	
+	print("PlayerController: Starting items given - check hotbar with hud_left/hud_right!")
+
+# Debug and Test Methods for Phase 1
+func print_inventory():
+	"""Print current inventory state for debugging"""
+	if player_inventory:
+		player_inventory.print_inventory()
+
+# === INVENTORY TEST METHODS (for Phase 1 validation) ===
+
+func test_give_bucket(state: String = "empty"):
+	"""Test method: Give player a bucket"""
+	var BucketItem = preload("res://systems/items/bucket_item.gd")
+	return BucketItem.give_bucket_to_player(self, state)
+
+func test_give_item(item_id: String, quantity: int = 1, state: String = ""):
+	"""Test method: Give player any item"""
+	var ItemRegistry = preload("res://systems/items/item_registry.gd")
+	return ItemRegistry.give_item_to_player(self, item_id, quantity, state)
+
+func test_use_selected_item():
+	"""Test method: Try to use currently selected item"""
+	if player_inventory:
+		return player_inventory.use_selected_item()
+	return false
+
+func test_inventory_summary():
+	"""Test method: Get inventory summary"""
+	if player_inventory:
+		var summary = player_inventory.get_inventory_summary()
+		print(summary)
+		return summary
+	return "No inventory component"
+
+# Component cleanup continuation
+func _cleanup_components():
+	"""Clean up all components"""
 	if player_movement:
 		player_movement.cleanup()
 	if player_survival:

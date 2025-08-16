@@ -1,0 +1,7 @@
+[gd_scene load_steps=3 format=3 uid="uid://3l5r6v4r3s8n"]
+
+[ext_resource type="PackedScene" path="res://test_hotbar_navigation.tscn" id="1_test"]
+[ext_resource type="Script" path="res://test_hotbar_visual.gd" id="2_test"]
+
+[node name="TestHotbarVisual" parent="." instance=ExtResource("1_test")]
+script = ExtResource("2_test")

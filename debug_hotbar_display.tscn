@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://debug_hotbar_display.gd" id="1_script"]
+[ext_resource type="Script" path="res://scenes/players/player_new.gd" id="2_player"]
+
+[node name="DebugHotbarDisplay" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 2, 2)
+
+[node name="Player" type="CharacterBody3D" parent="."]
+script = ExtResource("2_player")

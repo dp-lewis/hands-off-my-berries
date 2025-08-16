@@ -9,6 +9,7 @@ var thirst_bar: ProgressBar
 var tiredness_bar: ProgressBar
 var wood_label: Label
 var food_label: Label
+var hotbar_ui: Node  # Reference to the HotbarUI component
 
 var player_id: int = 0
 var target_player: Node3D = null
@@ -23,15 +24,6 @@ func _ready():
 	else:
 		# Defer positioning until viewport is available
 		call_deferred("position_ui_for_player")
-	
-	# Debug: Check if all node references are valid
-	print("UI Debug - player_label: ", player_label)
-	print("UI Debug - health_bar: ", health_bar)
-	print("UI Debug - hunger_bar: ", hunger_bar)
-	print("UI Debug - thirst_bar: ", thirst_bar)
-	print("UI Debug - tiredness_bar: ", tiredness_bar)
-	print("UI Debug - wood_label: ", wood_label)
-	print("UI Debug - food_label: ", food_label)
 
 func get_node_references():
 	player_label = $VBoxContainer/PlayerLabel
@@ -41,6 +33,7 @@ func get_node_references():
 	tiredness_bar = $VBoxContainer/TirednessContainer/TirednessBar
 	wood_label = $VBoxContainer/InventoryContainer/WoodLabel
 	food_label = $VBoxContainer/InventoryContainer/FoodLabel
+	hotbar_ui = $VBoxContainer/HotbarContainer/HotbarUI
 
 func setup_for_player(player: Node3D):
 	target_player = player
@@ -59,8 +52,11 @@ func setup_ui_elements():
 	# Check if all UI elements exist before setting values
 	if player_label:
 		player_label.text = "Player " + str(player_id + 1)
-	else:
-		print("Warning: player_label not found in UI")
+	
+	# Setup hotbar UI if available
+	if hotbar_ui and target_player:
+		# Add a small delay to ensure player components are fully initialized
+		call_deferred("connect_hotbar_with_delay")
 	
 	# Only position if we're properly in the scene tree
 	if is_inside_tree():
@@ -73,19 +69,17 @@ func position_ui_for_player():
 	# Get viewport safely with null checks
 	var viewport = get_viewport()
 	if not viewport:
-		print("Warning: Cannot get viewport for UI positioning - will retry later")
 		# Defer the positioning to try again later
 		call_deferred("position_ui_for_player")
 		return
 	
 	var viewport_rect = viewport.get_visible_rect()
 	if viewport_rect == Rect2():
-		print("Warning: Viewport rect is empty - will retry later")
 		call_deferred("position_ui_for_player")
 		return
 	
 	var viewport_size = viewport_rect.size
-	var ui_margin = 20
+	var ui_margin = 60
 	
 	# Ensure UI has a valid size before positioning
 	if size == Vector2.ZERO:
@@ -209,10 +203,38 @@ func _on_resource_changed(resource_type: String, _old_amount: int, new_amount: i
 
 func _on_resource_full(resource_type: String):
 	# Visual feedback when resource inventory is full
-	print("Player ", player_id + 1, " ", resource_type, " inventory is full!")
+	push_warning("Player " + str(player_id + 1) + " " + resource_type + " inventory is full!")
 	# Could add visual indicators here like flashing or color changes
 
 func _on_resource_empty(resource_type: String):
 	# Visual feedback when resource runs out
-	print("Player ", player_id + 1, " is out of ", resource_type, "!")
+	push_warning("Player " + str(player_id + 1) + " is out of " + resource_type + "!")
 	# Could add visual indicators here like warning colors
+
+func force_hotbar_update():
+	"""Force hotbar to update - useful for timing issues"""
+	if hotbar_ui and hotbar_ui.has_method("update_all_slots"):
+		hotbar_ui.update_all_slots()
+
+func connect_hotbar_with_delay():
+	"""Connect hotbar with a small delay to ensure components are ready"""
+	var max_retries = 3
+	var retry_count = 0
+	
+	while retry_count < max_retries:
+		if not target_player or not target_player.has_method("get_component"):
+			retry_count += 1
+			await get_tree().create_timer(0.1).timeout
+			continue
+		
+		# Try to get the inventory component
+		var inventory = target_player.get_component("inventory")
+		
+		if inventory:
+			hotbar_ui.setup_for_player(target_player)
+			return
+		
+		retry_count += 1
+		await get_tree().create_timer(0.1).timeout
+	
+	push_error("PlayerUI: Failed to connect hotbar after " + str(max_retries) + " retries")

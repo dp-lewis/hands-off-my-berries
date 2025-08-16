@@ -118,12 +118,32 @@ func handle_moisture_system(delta: float):
 	var watering_consistency = 1.0 - min(last_watered_time / 120.0, 1.0)  # Optimal watering every 2 minutes
 	care_quality = (care_quality + watering_consistency) / 2.0  # Running average
 
-func water_crop(_player: Node3D):
-	"""Water the crop to improve growth"""
+func water_crop(player: Node3D):
+	"""Water the crop to improve growth (enhanced for inventory system)"""
 	if not can_be_watered:
 		print("This crop doesn't need watering right now")
 		return false
 	
+	# Check if player has inventory system with watering tools
+	var inventory = player.get_component("inventory") if player.has_method("get_component") else null
+	if inventory:
+		var watering_tool = inventory.get_watering_tool()
+		if watering_tool:
+			# Use the tool to water
+			var BucketItem = preload("res://systems/items/bucket_item.gd")
+			if BucketItem.water_crop(watering_tool, player):
+				moisture_level = 1.0
+				last_watered_time = 0.0
+				print("Berry crop watered with ", watering_tool.get_display_name(), "! Growth speed increased.")
+				return true
+			else:
+				print("Could not use ", watering_tool.get_display_name(), " to water crop")
+				return false
+		else:
+			print("No watering tools available (need bucket with water or watering can)")
+			return false
+	
+	# Fallback to old system if no inventory
 	moisture_level = 1.0
 	last_watered_time = 0.0
 	print("Berry crop watered! Growth speed increased.")

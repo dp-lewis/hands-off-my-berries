@@ -13,6 +13,7 @@ var player_survival # : PlayerSurvival
 var player_builder # : PlayerBuilder
 var player_interaction # : PlayerInteraction
 var player_input_handler # : PlayerInputHandler
+var player_inventory # : PlayerInventory
 var camera_relative_movement # : CameraRelativeMovement
 
 # Resource Management System (keeping existing integration)
@@ -65,8 +66,10 @@ func setup_components():
 	var PlayerBuilderScript = load("res://components/player_builder.gd")
 	var PlayerInteractionScript = load("res://scenes/players/components/player_interaction.gd")
 	var PlayerInputHandlerScript = load("res://scenes/players/components/player_input_handler.gd")
+	var PlayerInventoryScript = load("res://components/player_inventory.gd")
 	var CameraRelativeMovementScript = load("res://components/camera_relative_movement.gd")
 	
+	player_inventory = PlayerInventoryScript.new()
 	player_movement = PlayerMovementScript.new()
 	player_survival = PlayerSurvivalScript.new()
 	player_builder = PlayerBuilderScript.new()
@@ -80,6 +83,7 @@ func setup_components():
 	add_child(player_builder)
 	add_child(player_interaction)
 	add_child(player_input_handler)
+	add_child(player_inventory)
 	add_child(camera_relative_movement)
 	
 	# Initialize components with this controller
@@ -88,10 +92,14 @@ func setup_components():
 	player_builder.initialize(self)
 	player_interaction.initialize(self)
 	player_input_handler.initialize(self)
+	player_inventory.initialize(self)
 	# camera_relative_movement doesn't need initialize (it's not a PlayerComponent)
 	
 	# Setup component communication
 	connect_component_signals()
+	
+	# Give starting items to player
+	call_deferred("give_starting_items")
 	
 	print("PlayerController: All components initialized for player ", player_id)
 
@@ -214,6 +222,8 @@ func get_component(component_type: String):
 			return player_interaction
 		"input_handler", "player_input_handler", "playerinputhandler":
 			return player_input_handler
+		"inventory", "player_inventory", "playerinventory":
+			return player_inventory
 		"resource_manager", "resourcemanager":
 			return resource_manager
 		_:
@@ -477,5 +487,30 @@ func _exit_tree():
 		player_interaction.cleanup()
 	if player_input_handler:
 		player_input_handler.cleanup()
+	if player_inventory:
+		player_inventory.cleanup()
 	
 	print("PlayerController: Cleaned up all components for player ", player_id)
+
+func give_starting_items():
+	"""Give player starting items for gameplay"""
+	if not player_inventory:
+		print("PlayerController: No inventory component available")
+		return
+	
+	# Initialize item registry
+	var ItemRegistryClass = preload("res://systems/items/item_registry.gd")
+	ItemRegistryClass.initialize()
+	
+	# Create starting items using ItemRegistry
+	var bucket_def = ItemRegistry.get_item_definition("bucket")
+	var watering_can_def = ItemRegistry.get_item_definition("watering_can") 
+	var berry_seeds_def = ItemRegistry.get_item_definition("berry_seeds")
+	
+	# Add items to inventory
+	if bucket_def:
+		player_inventory.add_item(bucket_def, 1, "empty")
+	if watering_can_def:
+		player_inventory.add_item(watering_can_def, 1, "full")
+	if berry_seeds_def:
+		player_inventory.add_item(berry_seeds_def, 5)

@@ -8,6 +8,8 @@ signal movement_input(direction: Vector2)
 signal action_pressed
 signal action_released
 signal build_mode_toggled
+signal hotbar_left_pressed
+signal hotbar_right_pressed
 
 # Input configuration for different player IDs
 var player_id: int = 0
@@ -17,6 +19,7 @@ var input_enabled: bool = true
 var movement_actions: Dictionary = {}
 var action_keys: Dictionary = {}
 var build_keys: Dictionary = {}
+var hotbar_nav_keys: Dictionary = {}  # Left/right hotbar navigation
 
 func _on_initialize() -> void:
 	# Get player ID from controller
@@ -28,14 +31,13 @@ func _on_initialize() -> void:
 	
 	# Initialize input mappings
 	setup_input_mappings()
-	
-	print("PlayerInputHandler initialized for player ", player_id)
 
 func _on_cleanup() -> void:
 	# Clear input mappings
 	movement_actions.clear()
 	action_keys.clear()
 	build_keys.clear()
+	hotbar_nav_keys.clear()
 
 func setup_input_mappings():
 	"""Setup input action mappings for all players"""
@@ -83,6 +85,14 @@ func setup_input_mappings():
 		2: "p3_build",
 		3: "p4_build"
 	}
+	
+	# Hotbar navigation mappings (left/right)
+	hotbar_nav_keys = {
+		0: {"left": "p1_hud_left", "right": "p1_hud_right"},
+		1: {"left": "p2_hud_left", "right": "p2_hud_right"},
+		2: {"left": "p3_hud_left", "right": "p3_hud_right"},
+		3: {"left": "p4_hud_left", "right": "p4_hud_right"}
+	}
 
 func _process(_delta: float) -> void:
 	if not is_initialized or not input_enabled:
@@ -104,6 +114,9 @@ func _process(_delta: float) -> void:
 	var build_key = get_build_key()
 	if Input.is_action_just_pressed(build_key):
 		build_mode_toggled.emit()
+	
+	# Handle hotbar navigation input
+	check_hotbar_navigation_input()
 
 func get_input_direction() -> Vector2:
 	"""Get movement input direction for this player"""
@@ -129,6 +142,17 @@ func get_build_key() -> String:
 	if player_id in build_keys:
 		return build_keys[player_id]
 	return "ui_select"  # Fallback
+
+func check_hotbar_navigation_input():
+	"""Check for hotbar navigation input (left/right)"""
+	if player_id not in hotbar_nav_keys:
+		return
+	
+	var nav_keys = hotbar_nav_keys[player_id]
+	if Input.is_action_just_pressed(nav_keys["left"]):
+		hotbar_left_pressed.emit()
+	elif Input.is_action_just_pressed(nav_keys["right"]):
+		hotbar_right_pressed.emit()
 
 # Manual input checking methods (for external polling)
 func is_action_pressed() -> bool:
@@ -177,7 +201,6 @@ func set_player_id(new_player_id: int) -> void:
 	"""Change the player ID and update input mappings"""
 	player_id = new_player_id
 	setup_input_mappings()
-	print("PlayerInputHandler: Updated to player ", player_id)
 
 func get_player_id() -> int:
 	"""Get the current player ID"""
