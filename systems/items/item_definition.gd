@@ -33,6 +33,10 @@ extends Resource
 @export var use_sound: AudioStream
 @export var use_animation: String = ""
 
+# Food-specific properties
+@export var is_food: bool = false
+@export var hunger_restore: float = 0.0  # How much hunger this food restores when consumed
+
 # Validation method
 func is_valid() -> bool:
 	"""Check if this item definition is properly configured"""

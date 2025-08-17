@@ -107,6 +107,6 @@ layout_mode = 2
 text = "Hotbar:"
 horizontal_alignment = 1
 
-[node name="HotbarUI" type="HBoxContainer" parent="VBoxContainer/HotbarContainer"]
+[node name="HotbarUI" type="VBoxContainer" parent="VBoxContainer/HotbarContainer"]
 layout_mode = 2
 script = ExtResource("2_hotbar")

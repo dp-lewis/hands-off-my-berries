@@ -22,7 +22,7 @@ var is_dead: bool = false
 @export var hunger_decrease_rate: float = 0.5  # Hunger lost per second (30 per minute)
 @export var thirst_decrease_rate: float = 1.0  # Thirst lost per second (60 per minute) 
 @export var health_decrease_rate: float = 1.0  # Health lost per second when starving (60 per minute)
-@export var auto_eat_threshold: float = 30.0  # Auto-eat when hunger drops below this
+@export var auto_eat_threshold: float = 30.0  # DEPRECATED: No longer used - kept for compatibility
 @export var default_food_hunger_restore: float = 25.0  # Default hunger restore for generic food
 @export var water_thirst_restore: float = 40.0  # How much thirst water restores (when implemented)
 
@@ -135,10 +135,8 @@ func handle_hunger_system(delta: float):
 		print("Player ", get_player_id(), " - Hunger: ", int(hunger), "/", int(max_hunger), " Food: ", current_food, status_text)
 		hunger_log_timer = 5.0  # Log every 5 seconds
 	
-	# Auto-eat if hunger is low and we have food
-	var has_food = resource_manager.get_resource_amount("food") > 0 if resource_manager else false
-	if hunger <= auto_eat_threshold and has_food:
-		consume_food()
+	# Auto-consumption disabled - players now manually consume food via hotbar
+	# TODO: Remove auto_eat_threshold and related code in future cleanup
 	
 	# If hunger reaches 0, start losing health
 	if hunger <= 0.0:

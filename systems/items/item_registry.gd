@@ -31,6 +31,18 @@ static func initialize():
 	var hoe_def = create_hoe_definition()
 	register_item(hoe_def)
 	
+	# Register berries food item
+	var berries_def = create_berries_definition()
+	register_item(berries_def)
+	
+	# Register pumpkin food item
+	var pumpkin_def = create_pumpkin_definition()
+	register_item(pumpkin_def)
+	
+	# Register carrot food item
+	var carrot_def = create_carrot_definition()
+	register_item(carrot_def)
+	
 	_initialized = true
 	print("ItemRegistry: Initialized with ", _definitions.size(), " item definitions")
 
@@ -137,6 +149,69 @@ static func create_hoe_definition():
 	definition.tool_efficiency = 1.0  # Standard efficiency for tilling
 	var tilling_actions: Array[String] = ["till", "prepare_soil"]
 	definition.tool_actions = tilling_actions
+	
+	return definition
+
+static func create_berries_definition():
+	"""Create berries food item definition"""
+	var definition = preload("res://systems/items/item_definition.gd").new()
+	
+	definition.item_id = "berries"
+	definition.display_name = "Berries"
+	definition.description = "Sweet berries harvested from berry bushes. Restores hunger when consumed."
+	definition.item_type = "consumable"
+	
+	definition.max_stack_size = 20
+	definition.is_stackable = true
+	
+	definition.is_consumable = true
+	definition.consume_on_use = true
+	
+	# Food properties
+	definition.is_food = true
+	definition.hunger_restore = 15.0  # Same as berry crop's hunger_restore_per_berry
+	
+	return definition
+
+static func create_pumpkin_definition():
+	"""Create pumpkin food item definition"""
+	var definition = preload("res://systems/items/item_definition.gd").new()
+	
+	definition.item_id = "pumpkin"
+	definition.display_name = "Pumpkin"
+	definition.description = "Nutritious pumpkin. Restores more hunger than berries when consumed."
+	definition.item_type = "consumable"
+	
+	definition.max_stack_size = 10
+	definition.is_stackable = true
+	
+	definition.is_consumable = true
+	definition.consume_on_use = true
+	
+	# Food properties
+	definition.is_food = true
+	definition.hunger_restore = 25.0  # Same as pumpkin's hunger_restore_value
+	
+	return definition
+
+static func create_carrot_definition():
+	"""Create carrot food item definition"""
+	var definition = preload("res://systems/items/item_definition.gd").new()
+	
+	definition.item_id = "carrot"
+	definition.display_name = "Carrot"
+	definition.description = "Fresh carrot. Provides good nutrition and hunger restoration."
+	definition.item_type = "consumable"
+	
+	definition.max_stack_size = 15
+	definition.is_stackable = true
+	
+	definition.is_consumable = true
+	definition.consume_on_use = true
+	
+	# Food properties
+	definition.is_food = true
+	definition.hunger_restore = 25.0  # Same as carrot's hunger_restore_value
 	
 	return definition
 

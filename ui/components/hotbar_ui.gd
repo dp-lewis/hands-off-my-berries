@@ -1,5 +1,5 @@
 class_name HotbarUI
-extends HBoxContainer
+extends VBoxContainer
 
 ## Visual hotbar UI component for displaying and selecting inventory items
 ## Shows the first 4 slots of player inventory with selection feedback
@@ -12,6 +12,8 @@ var selected_slot: int = 0
 # Component references
 var target_inventory # : PlayerInventory
 var hotbar_slots: Array = []  # Array of HotbarSlotUI controls
+var slots_container: HBoxContainer  # Container for the hotbar slots
+var item_name_label: Label  # Label showing the selected item name
 var player_id: int = -1  # Player ID for input actions
 
 # Signals
@@ -29,7 +31,9 @@ func _ready():
 	hotbar_size = 4
 	selected_slot = 0
 	setup_styles()
+	create_hotbar_container()
 	create_hotbar_slots()
+	create_item_name_label()
 	
 	# Enable input processing
 	set_process_unhandled_input(true)
@@ -82,11 +86,25 @@ func setup_for_player(player: Node3D):
 		else:
 			push_error("HotbarUI: Failed to get inventory component from player")
 
-func _on_inventory_changed(slot_index: int):
-	"""Called when inventory slot changes"""
-	if slot_index < hotbar_size:
-		update_slot_display(slot_index)
-	# Ignore non-hotbar slots
+func update_item_name_label():
+	"""Update the item name label to show the selected item's name"""
+	if not item_name_label or not target_inventory:
+		return
+	
+	var inventory_slot = target_inventory.get_slot(selected_slot)
+	if inventory_slot and not inventory_slot.is_empty():
+		# Use the inventory slot's display name method which handles states properly
+		var display_name = inventory_slot.get_display_name()
+		if display_name != "":
+			item_name_label.text = display_name
+		else:
+			item_name_label.text = "Unknown Item"
+	else:
+		item_name_label.text = "Empty"
+
+func _on_inventory_changed(_slot_index: int = -1):
+	"""Called when inventory changes"""
+	update_all_slots()
 
 func _on_hotbar_selection_changed(slot_index: int):
 	"""Handle hotbar selection changes from inventory"""
@@ -156,19 +174,39 @@ func setup_for_inventory(inventory):
 	# Initial update
 	update_all_slots()
 
+func create_hotbar_container():
+	"""Create the horizontal container for hotbar slots"""
+	slots_container = HBoxContainer.new()
+	add_child(slots_container)
+
 func create_hotbar_slots():
 	"""Create UI elements for each hotbar slot"""
 	# Clear existing slots
-	for child in get_children():
-		child.queue_free()
+	if slots_container:
+		for child in slots_container.get_children():
+			child.queue_free()
 	
 	hotbar_slots.clear()
 	
 	# Create new slots
 	for i in range(hotbar_size):
 		var slot_ui = create_slot_ui(i)
-		add_child(slot_ui)
+		slots_container.add_child(slot_ui)
 		hotbar_slots.append(slot_ui)
+
+func create_item_name_label():
+	"""Create the label that shows the selected item name"""
+	item_name_label = Label.new()
+	item_name_label.text = ""
+	item_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	item_name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	item_name_label.add_theme_font_size_override("font_size", 12)
+	item_name_label.add_theme_color_override("font_color", Color.WHITE)
+	item_name_label.add_theme_color_override("font_shadow_color", Color.BLACK)
+	item_name_label.add_theme_constant_override("shadow_offset_x", 1)
+	item_name_label.add_theme_constant_override("shadow_offset_y", 1)
+	item_name_label.custom_minimum_size.y = 20
+	add_child(item_name_label)
 
 func create_slot_ui(slot_index: int) -> Control:
 	"""Create a single hotbar slot UI element"""
@@ -328,6 +366,9 @@ func update_all_slots():
 	"""Update all hotbar slot displays"""
 	for i in range(hotbar_size):
 		update_slot_display(i)
+	
+	# Update the item name label for the selected slot
+	update_item_name_label()
 
 func set_selected_slot(slot_index: int):
 	"""Set which slot is visually selected (called from user input)"""

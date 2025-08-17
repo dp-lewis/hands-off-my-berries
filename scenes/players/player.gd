@@ -52,11 +52,11 @@ func _ready():
 	# Setup resource management system
 	setup_resource_system()
 	
-	# Create simple UI
-	create_player_ui()
-	
-	# Initialize component architecture
+	# Initialize component architecture first
 	setup_components()
+	
+	# Create simple UI after components are ready
+	create_player_ui()
 
 func setup_components():
 	"""Initialize all player components"""

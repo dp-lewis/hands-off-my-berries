@@ -53,9 +53,8 @@ func setup_farming_detection():
 	pass
 
 func _on_item_used(item_definition, amount: int, player_node: Node3D):
-	"""Handle farming tool and seed usage"""
-	if not item_definition:
-		return
+	"""Handle item usage for farming tools and seeds"""
+	print("PlayerFarming: Item used - ", item_definition.item_id, " (", amount, ")")
 	
 	match item_definition.item_id:
 		"berry_seeds":
@@ -64,6 +63,44 @@ func _on_item_used(item_definition, amount: int, player_node: Node3D):
 			attempt_till_soil(item_definition, player_node)
 		"watering_can":
 			attempt_water_crops(item_definition, player_node)
+
+func _on_crop_harvested(berries_harvested: int, crop_position: Vector3):
+	"""Handle completed crop harvest"""
+	print("PlayerFarming: Harvest completed - ", berries_harvested, " berries harvested at ", crop_position)
+	emit_farming_message("Harvested " + str(berries_harvested) + " berries!")
+	
+	# Emit farming signal
+	crop_harvested.emit(crop_position, "berries", berries_harvested)
+	
+	# Update soil state back to growing (crop will regrow)
+	if crop_position in soil_patches:
+		soil_patches[crop_position] = SoilState.GROWING
+		print("PlayerFarming: Updated soil state to GROWING for regrowth")
+
+func _on_crop_ready_for_harvest(crop_position: Vector3, _crop_instance: Node3D):
+	"""Handle when a crop becomes ready for harvest"""
+	print("PlayerFarming: Crop ready for harvest at ", crop_position)
+	
+	# Update soil state to ready for harvest
+	if crop_position in soil_patches:
+		soil_patches[crop_position] = SoilState.READY_TO_HARVEST
+		print("PlayerFarming: Updated soil state to READY_TO_HARVEST")
+	
+	emit_farming_message("Crop ready for harvest!")
+	farming_action_performed.emit("ready_for_harvest", crop_position)
+
+func _on_crop_growth_stage_changed(new_stage: int, crop_position: Vector3):
+	"""Handle crop growth stage changes"""
+	print("PlayerFarming: Crop at ", crop_position, " advanced to growth stage ", new_stage)
+	
+	# Update soil state based on growth stage
+	if crop_position in soil_patches:
+		if new_stage >= 1:  # Growing stages
+			soil_patches[crop_position] = SoilState.GROWING
+		
+		print("PlayerFarming: Updated soil state for growth stage ", new_stage)
+	
+	farming_action_performed.emit("growth_stage_" + str(new_stage), crop_position)
 
 func attempt_plant_seeds(seed_definition, _amount: int, player_node: Node3D):
 	"""Attempt to plant seeds at player's current location"""
@@ -292,6 +329,13 @@ func plant_crop_at_position(position: Vector3, _seed_definition):
 	world.add_child(crop_instance)
 	crop_instance.global_position = position
 	print("PlayerFarming: Berry crop added to scene and positioned at: ", position)
+	
+	# Connect to crop growth signals for state tracking
+	if crop_instance.has_signal("ready_for_harvest"):
+		crop_instance.ready_for_harvest.connect(_on_crop_ready_for_harvest.bind(position, crop_instance))
+	
+	if crop_instance.has_signal("growth_stage_changed"):
+		crop_instance.growth_stage_changed.connect(_on_crop_growth_stage_changed.bind(position))
 	
 	# Track the planted crop
 	planted_crops.append(crop_instance)

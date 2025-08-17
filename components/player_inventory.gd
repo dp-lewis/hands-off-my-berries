@@ -231,6 +231,10 @@ func use_selected_item() -> bool:
 	var item_def = selected_slot.item_definition
 	print("PlayerInventory: Using item: ", item_def.display_name, " (", item_def.item_id, ")")
 	
+	# Check if item is food and should be consumed
+	if item_def.is_food and item_def.hunger_restore > 0:
+		return consume_food_item(item_def, selected_slot)
+	
 	# Handle specific item types with custom logic
 	var success = false
 	match item_def.item_id:
@@ -273,6 +277,38 @@ func use_selected_item() -> bool:
 			selected_slot.damage_item(1)  # Basic damage, could be customized
 	
 	return success
+
+func consume_food_item(item_def, slot: InventorySlot) -> bool:
+	"""Consume a food item to restore hunger"""
+	print("PlayerInventory: Consuming food: ", item_def.display_name, " (restores ", item_def.hunger_restore, " hunger)")
+	
+	# Get the survival component to restore hunger
+	var survival_component = player_controller.get_component("survival") if player_controller.has_method("get_component") else null
+	if not survival_component:
+		print("PlayerInventory: Error - No survival component found")
+		return false
+	
+	# Check if player has room for more hunger (don't waste food)
+	if survival_component.hunger >= survival_component.max_hunger:
+		print("PlayerInventory: Cannot consume food - hunger is already full")
+		return false
+	
+	# Restore hunger
+	var old_hunger = survival_component.hunger
+	survival_component.hunger = min(survival_component.hunger + item_def.hunger_restore, survival_component.max_hunger)
+	var hunger_restored = survival_component.hunger - old_hunger
+	
+	# Emit hunger changed signal
+	if survival_component.has_signal("hunger_changed"):
+		survival_component.hunger_changed.emit(survival_component.hunger, survival_component.max_hunger)
+	
+	# Remove one food item from inventory
+	slot.remove_quantity(1)
+	
+	print("PlayerInventory: Food consumed! Hunger restored by ", hunger_restored, " to ", int(survival_component.hunger), "/", int(survival_component.max_hunger))
+	print("PlayerInventory: Remaining ", item_def.display_name, ": ", slot.quantity)
+	
+	return true
 
 func use_item_in_slot(slot_index: int) -> bool:
 	"""Use item in a specific slot"""

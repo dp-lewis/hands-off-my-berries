@@ -8,7 +8,7 @@ var hunger_bar: ProgressBar
 var thirst_bar: ProgressBar
 var tiredness_bar: ProgressBar
 var wood_label: Label
-var food_label: Label
+# food_label removed - now using individual food items in inventory instead of generic counter
 var hotbar_ui: Node  # Reference to the HotbarUI component
 
 var player_id: int = 0
@@ -32,7 +32,7 @@ func get_node_references():
 	thirst_bar = $VBoxContainer/ThirstContainer/ThirstBar
 	tiredness_bar = $VBoxContainer/TirednessContainer/TirednessBar
 	wood_label = $VBoxContainer/InventoryContainer/WoodLabel
-	food_label = $VBoxContainer/InventoryContainer/FoodLabel
+	# food_label removed - food is now managed as individual items in inventory
 	hotbar_ui = $VBoxContainer/HotbarContainer/HotbarUI
 
 func setup_for_player(player: Node3D):
@@ -149,9 +149,7 @@ func update_ui_values():
 	if wood_label:
 		var wood_amount = target_player.resource_manager.get_resource_amount("wood") if target_player.resource_manager else 0
 		wood_label.text = "🪵 " + str(wood_amount)
-	if food_label:
-		var food_amount = target_player.resource_manager.get_resource_amount("food") if target_player.resource_manager else 0
-		food_label.text = "🍖 " + str(food_amount)
+	# Food label removed - food is now individual items managed through inventory system
 	
 	# Color-code bars based on values
 	update_bar_colors()
@@ -198,8 +196,7 @@ func _on_resource_changed(resource_type: String, _old_amount: int, new_amount: i
 	# Update specific resource display when it changes
 	if resource_type == "wood" and wood_label:
 		wood_label.text = "🪵 " + str(new_amount)
-	elif resource_type == "food" and food_label:
-		food_label.text = "🍖 " + str(new_amount)
+	# Food resource removed - food is now individual items managed through inventory system
 
 func _on_resource_full(resource_type: String):
 	# Visual feedback when resource inventory is full

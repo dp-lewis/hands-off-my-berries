@@ -82,24 +82,27 @@ func stop_gathering():
 
 func complete_gathering():
 	if current_gatherer:
-		var resource_manager = current_gatherer.get_node("ResourceManager")
-		if resource_manager:
-			# Try to add food to gatherer's inventory using ResourceManager
-			if resource_manager.add_resource("food", food_amount):
-				# Notify the gatherer's survival system about the hunger restoration value
-				var survival_component = current_gatherer.get_component("survival") if current_gatherer.has_method("get_component") else null
-				if survival_component and survival_component.has_method("set_last_food_restore_value"):
-					survival_component.set_last_food_restore_value(hunger_restore_value)
-				
-				print(food_type.capitalize(), " harvested! Gave ", food_amount, " food (", hunger_restore_value, " hunger restore)")
-				
-				# Remove the food from the scene
-				queue_free()
+		# Get player inventory component instead of resource manager
+		var inventory_component = current_gatherer.get_component("inventory") if current_gatherer.has_method("get_component") else null
+		if inventory_component:
+			# Get the appropriate food item definition
+			var food_definition = ItemRegistry.get_item_definition(food_type)
+			if food_definition:
+				# Try to add food to gatherer's inventory
+				var added = inventory_component.add_item(food_definition, food_amount)
+				if added > 0:
+					print(food_type.capitalize(), " harvested! Gave ", added, " ", food_definition.display_name, " (", hunger_restore_value, " hunger restore each)")
+					
+					# Remove the food from the scene
+					queue_free()
+				else:
+					print("Gatherer's inventory is full - cannot add ", food_definition.display_name, "!")
+					stop_gathering()
 			else:
-				print("Gatherer's food inventory is full!")
+				print("Error: Food item definition not found for: ", food_type)
 				stop_gathering()
 		else:
-			print("Warning: No ResourceManager found on gatherer!")
+			print("Warning: No inventory component found on gatherer!")
 			stop_gathering()
 	else:
 		stop_gathering()

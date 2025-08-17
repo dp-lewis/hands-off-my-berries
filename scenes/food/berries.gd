@@ -193,29 +193,32 @@ func stop_harvesting():
 func complete_harvest():
 	"""Complete the harvest and add berries to player inventory"""
 	if current_harvester:
-		var resource_manager = current_harvester.get_node("ResourceManager")
-		if resource_manager:
+		# Get player inventory component instead of resource manager
+		var inventory_component = current_harvester.get_component("inventory") if current_harvester.has_method("get_component") else null
+		if inventory_component:
 			# Calculate harvest yield based on care quality
 			var berry_yield = int(harvest_amount * care_quality)
 			berry_yield = max(berry_yield, 1)  # Always get at least 1 berry
 			
-			# Try to add berries to harvester's inventory
-			if resource_manager.add_resource("food", berry_yield):
-				# Notify survival system about hunger restoration value
-				var survival_component = current_harvester.get_component("survival") if current_harvester.has_method("get_component") else null
-				if survival_component and survival_component.has_method("set_last_food_restore_value"):
-					survival_component.set_last_food_restore_value(hunger_restore_per_berry)
-				
-				print("Harvested ", berry_yield, " berries! (", hunger_restore_per_berry, " hunger restore each)")
-				harvest_completed.emit(berry_yield)
-				
-				# Start regrowth cycle
-				start_regrowth()
+			# Get berries item definition from ItemRegistry
+			var berries_definition = ItemRegistry.get_item_definition("berries")
+			if berries_definition:
+				# Try to add berries to harvester's inventory
+				var added = inventory_component.add_item(berries_definition, berry_yield)
+				if added > 0:
+					print("Harvested ", added, " berries! (", hunger_restore_per_berry, " hunger restore each)")
+					harvest_completed.emit(added)
+					
+					# Start regrowth cycle
+					start_regrowth()
+				else:
+					print("Harvester's inventory is full - cannot add berries!")
+					stop_harvesting()
 			else:
-				print("Harvester's inventory is full!")
+				print("Error: Berries item definition not found in ItemRegistry!")
 				stop_harvesting()
 		else:
-			print("Warning: No ResourceManager found on harvester!")
+			print("Warning: No inventory component found on harvester!")
 			stop_harvesting()
 	else:
 		stop_harvesting()
